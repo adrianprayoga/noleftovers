@@ -1,0 +1,8 @@
+#up docker compose up -d
+#login 
+docker ps
+docker exec -it server-db-1 /usr/bin/psql -U postgres -d noleftovers
+
+
+
+

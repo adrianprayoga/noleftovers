@@ -8,7 +8,7 @@ import (
 )
 
 type User struct {
-	ID 	uint
+	Id    uint
 	Email string
 	PasswordHash string
 }
@@ -41,7 +41,7 @@ func (us *UserService) Create(nu NewUser) (*User, error) {
 
 	row := us.DB.QueryRow(`INSERT INTO users (email, password_hash) 
 								 VALUES ($1, $2) RETURNING id`, email, passwordHash)
-	err = row.Scan(&user.ID)
+	err = row.Scan(&user.Id)
 	if err != nil {
 		return nil, fmt.Errorf("create user: %w", err)
 	}
@@ -56,7 +56,7 @@ func (us *UserService) Authenticate(email string, password string) (*User, error
 		Email: email,
 	}
 	row := us.DB.QueryRow(`SELECT id, password_hash FROM users WHERE email=$1`, email)
-	err := row.Scan(&user.ID, &user.PasswordHash)
+	err := row.Scan(&user.Id, &user.PasswordHash)
 	if err != nil {
 		fmt.Println("Error authenticating")
 		return nil, fmt.Errorf("user login: %w", err)

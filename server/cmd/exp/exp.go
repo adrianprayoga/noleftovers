@@ -31,14 +31,7 @@ func (cfg PostgresConfig) String() string {
 
 
 func main() {
-	cfg := PostgresConfig{
-		Host:     "localhost",
-		Port:     "5432",
-		User:     "postgres",
-		Password: "noleftovers",
-		Database: "noleftovers",
-		SSLMode:  "disable",
-	}
+	cfg := models.DefaultPostgresConfig()
 	db, err := sql.Open("pgx", cfg.String())
 
 	if err != nil {
@@ -81,14 +74,24 @@ func main() {
 	//}
 	//fmt.Println("User created.")
 
-	us := models.UserService{DB: db}
+	rs := models.RecipeService{DB: db}
+	recipe, _ := rs.CreateRecipe(models.Recipe{
+		Name: "oklahoma burger",
+		Description: "lorem ipsum ...",
+	})
 
-	user, err := us.Authenticate("mr@gmail.com", "123")
+	//user, err := us.Authenticate("mr@gmail.com", "123")
 	//row := us.DB.QueryRow(`SELECT id, password_hash FROM users WHERE email=$1`, "mr@gmail.com")
 
 	//var id uint
 	//var pw string
 	//row.Scan(&id, &pw)
 
-	fmt.Println(user)
+
+
+	fmt.Println(recipe)
+
+	recipe, _ = rs.SearchRecipeById(1)
+
+	fmt.Println(recipe)
 }
