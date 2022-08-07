@@ -11,6 +11,8 @@ type Recipe struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Author      sql.NullInt32 `json:"author"`
+	ModifiedAt  string        `json:"modified_at"`
+	CreatedAt   string        `json:"created_at"`
 }
 
 type RecipeService struct {

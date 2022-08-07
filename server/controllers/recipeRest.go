@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
-	"log"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 )
@@ -18,11 +20,17 @@ import (
 //	Price  float64 `json:"price"`
 //}
 //
-//var albums = []album{
-//	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-//	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-//	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-//}
+
+type createRecipeRequest struct {
+	Name        string        `json:"name" validate:"required"`
+	Description string        `json:"description" validate:"required,min=1,max=400"`
+	Author      sql.NullInt32 `json:"author"`
+}
+
+type ApiError struct {
+	Field        string `json:"field"`
+	ErrorMessage string `json:"errorMessage"`
+}
 
 type RecipeResource struct {
 	RecipeService *models.RecipeService
@@ -66,8 +74,21 @@ func (rs RecipeResource) List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (r createRecipeRequest) IsValid() error {
+	// Note: https://medium.com/@apzuk3/input-validation-in-golang-bc24cdec1835
+
+	v := validator.New()
+	err := v.Struct(r)
+
+	for _, e := range err.(validator.ValidationErrors) {
+		fmt.Println(e)
+	}
+
+	return err
+}
+
 func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
-	var recipe models.Recipe
+	var recipe createRecipeRequest
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -77,9 +98,28 @@ func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(recipe)
+	if err = recipe.IsValid(); err != nil {
+		// TODO: refactor out
+		var out []ApiError
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			out = make([]ApiError, len(ve))
+			for i, fe := range ve {
+				out[i] = ApiError{fe.Field(), fe.Error()}
+			}
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		res, _ := json.Marshal(out)
+		_, err = w.Write(res)
+		return
+	}
 
-	_, err = rs.RecipeService.CreateRecipe(recipe)
+	// Map to domain entity
+	_, err = rs.RecipeService.CreateRecipe(models.Recipe{
+		Name:        recipe.Name,
+		Description: recipe.Description,
+		Author:      recipe.Author,
+	})
 	if err != nil {
 		fmt.Println("Something went wrong when creating an object")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
