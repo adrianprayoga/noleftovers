@@ -29,7 +29,6 @@ func (cfg PostgresConfig) String() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, cfg.SSLMode)
 }
 
-
 func main() {
 	cfg := models.DefaultPostgresConfig()
 	db, err := sql.Open("pgx", cfg.String())
@@ -76,7 +75,7 @@ func main() {
 
 	rs := models.RecipeService{DB: db}
 	recipe, _ := rs.CreateRecipe(models.Recipe{
-		Name: "oklahoma burger",
+		Name:        "oklahoma burger",
 		Description: "lorem ipsum ...",
 	})
 
@@ -87,11 +86,9 @@ func main() {
 	//var pw string
 	//row.Scan(&id, &pw)
 
-
-
 	fmt.Println(recipe)
 
-	recipe, _ = rs.SearchRecipeById(1)
+	recipe, _ = rs.GetRecipeById(1)
 
 	fmt.Println(recipe)
 }
