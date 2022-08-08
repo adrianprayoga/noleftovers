@@ -5,6 +5,7 @@ interface RecipeHighlight {
   id: string;
   name: string;
   description: string;
+  imageLink: string;
 }
 
 const RecipeCard = (props: RecipeHighlight) => {
@@ -12,7 +13,7 @@ const RecipeCard = (props: RecipeHighlight) => {
     <div className="justify-self-stretch flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
       <img
         className="h-96 rounded-t-lg md:h-auto md:w-48 md:rounded-none md:rounded-l-lg"
-        src={`/images/${props.id}.jpeg`}
+        src={props.imageLink ? props.imageLink : `/images/${props.id}.jpeg`}
         alt=""
         width="100%"
         height="100%"
