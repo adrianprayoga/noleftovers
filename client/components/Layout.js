@@ -5,7 +5,7 @@ import utilStyles from '../styles/utils.module.css';
 import Link from 'next/link';
 import Nav from './Nav';
 
-const name = 'Your Name';
+const name = 'To change';
 export const siteTitle = 'No Leftovers';
 
 export default function Layout({ children, home }) {

@@ -28,9 +28,9 @@ const RecipeCard = (props: RecipeHighlight) => {
           </p>
           <p>
             {`Tags: `}
-            {["chicken", "burger", "pizza"].map((item) => {
+            {["chicken", "burger", "pizza"].map((item, i) => {
               return (
-                <Link href={`/${item}`}>
+                <Link href={`/${item}`} key={i}>
                   <a>{item + ", "}</a>
                 </Link>
               );

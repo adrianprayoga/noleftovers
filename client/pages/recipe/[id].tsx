@@ -9,6 +9,8 @@ import path from "path";
 const Post = (props) => {
   const { recipeData } = props;
 
+  console.log(props)
+
   return (
     <Layout home={false}>
       {/* <Head>
@@ -32,7 +34,7 @@ export default Post;
 
 export const getStaticPaths = async () => {
   // this needs to be known beforehand
-  const paths = getAllRecipeIds();
+  const paths = await getAllRecipeIds();
   return {
     paths,
     fallback: "blocking",
