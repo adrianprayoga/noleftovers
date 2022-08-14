@@ -73,11 +73,11 @@ func main() {
 	//}
 	//fmt.Println("User created.")
 
-	rs := models.RecipeService{DB: db}
-	recipe, _ := rs.CreateRecipe(models.Recipe{
-		Name:        "oklahoma burger",
-		Description: "lorem ipsum ...",
-	})
+	//rs := models.Service{DB: db}
+	//recipe, _ := rs.CreateRecipe(models.Recipe{
+	//	Name:        "oklahoma burger",
+	//	Description: "lorem ipsum ...",
+	//})
 
 	//user, err := us.Authenticate("mr@gmail.com", "123")
 	//row := us.DB.QueryRow(`SELECT id, password_hash FROM users WHERE email=$1`, "mr@gmail.com")
@@ -86,9 +86,4 @@ func main() {
 	//var pw string
 	//row.Scan(&id, &pw)
 
-	fmt.Println(recipe)
-
-	recipe, _ = rs.GetRecipeById(1)
-
-	fmt.Println(recipe)
 }

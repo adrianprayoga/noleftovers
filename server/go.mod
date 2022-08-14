@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/csrf v1.7.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jinzhu/copier v0.3.5
+	github.com/lib/pq v1.10.2
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 )
 

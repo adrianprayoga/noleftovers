@@ -28,7 +28,6 @@ func main() {
 	r.Use(middleware.Logger)
 
 	r.Use(cors.Handler(cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -36,12 +35,18 @@ func main() {
 		AllowCredentials: false,
 	}))
 
-	var resource controllers.RecipeResource
-	resource.RecipeService = &models.RecipeService{
+	var recipeResource controllers.RecipeResource
+	recipeResource.Service = &models.RecipeService{
 		DB: db,
 	}
 
-	r.Mount("/recipe", resource.Routes())
+	var measureResource controllers.MeasureResource
+	measureResource.Service = &models.MeasureService{
+		DB: db,
+	}
+
+	r.Mount("/recipe", recipeResource.Routes())
+	r.Mount("/measures", measureResource.Routes())
 
 	fmt.Println("Starting the server on :7171...")
 	http.ListenAndServe(":7171", r)

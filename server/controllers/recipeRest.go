@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,18 +12,22 @@ import (
 	"strconv"
 )
 
-//type album struct {
-//	ID     string  `json:"id"`
-//	Title  string  `json:"title"`
-//	Artist string  `json:"artist"`
-//	Price  float64 `json:"price"`
-//}
-//
-
 type createRecipeRequest struct {
-	Name        string        `json:"name" validate:"required"`
-	Description string        `json:"description" validate:"required,min=1,max=400"`
-	Author      sql.NullInt32 `json:"author"`
+	Name        string                    `json:"name" validate:"required"`
+	Description string                    `json:"description" validate:"required,min=1,max=400"`
+	Author      uint                      `json:"author"`
+	Steps       []createStepsRequest      `json:"steps" validate:"required,dive,min=1"`
+	Ingredients []createIngredientRequest `json:"ingredients" validate:"required,dive,min=1"`
+}
+
+type createStepsRequest struct {
+	Text string `json:"text" validate:"required,min=1"`
+}
+
+type createIngredientRequest struct {
+	Name    string      `json:"name" validate:"required"`
+	Amount  json.Number `json:"amount"`
+	Measure json.Number `json:"measure"`
 }
 
 type ApiError struct {
@@ -33,7 +36,7 @@ type ApiError struct {
 }
 
 type RecipeResource struct {
-	RecipeService *models.RecipeService
+	Service *models.RecipeService
 }
 
 func (rs RecipeResource) Routes() chi.Router {
@@ -58,7 +61,7 @@ func GetCtx(next http.Handler) http.Handler {
 }
 
 func (rs RecipeResource) List(w http.ResponseWriter, r *http.Request) {
-	recipes, err := rs.RecipeService.GetRecipes()
+	recipes, err := rs.Service.GetRecipes()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -78,10 +81,16 @@ func (r createRecipeRequest) IsValid() error {
 	// Note: https://medium.com/@apzuk3/input-validation-in-golang-bc24cdec1835
 
 	v := validator.New()
+	_ = v.RegisterValidation("passwd", func(fl validator.FieldLevel) bool {
+		return len(fl.Field().String()) > 6
+	})
+
 	err := v.Struct(r)
 
-	for _, e := range err.(validator.ValidationErrors) {
-		fmt.Println(e)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			fmt.Println(e)
+		}
 	}
 
 	return err
@@ -97,6 +106,8 @@ func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 
 	if err = recipe.IsValid(); err != nil {
 		// TODO: refactor out
@@ -115,17 +126,47 @@ func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Map to domain entity
-	_, err = rs.RecipeService.CreateRecipe(models.Recipe{
+	rec := models.Recipe{
 		Name:        recipe.Name,
 		Description: recipe.Description,
 		Author:      recipe.Author,
-	})
+		ImageLink:   `/images/`, // TODO: update
+	}
+
+	ingredients := make([]models.Ingredient, len(recipe.Ingredients))
+	for i, ing := range recipe.Ingredients {
+		ingredients[i] = models.Ingredient{
+			Name: ing.Name,
+		}
+
+		// TODO: handle error
+		amt, err := ing.Amount.Float64()
+		if err == nil {
+			ingredients[i].Amount = float32(amt)
+		}
+
+		m, err := ing.Measure.Float64()
+		if err == nil {
+			ingredients[i].Measure = uint(m)
+		}
+	}
+
+	steps := make([]models.RecipeStep, len(recipe.Steps))
+	for i, s := range recipe.Steps {
+		steps[i] = models.RecipeStep{
+			Text: s.Text,
+		}
+	}
+
+	newRecipe, err := rs.Service.CreateRecipe(rec, steps, ingredients)
 	if err != nil {
 		fmt.Println("Something went wrong when creating an object")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	res, _ := json.Marshal(newRecipe)
+	_, err = w.Write(res)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -135,7 +176,7 @@ func (rs RecipeResource) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	recipe, err := rs.RecipeService.GetRecipeById(uint(id))
+	recipe, err := rs.Service.GetRecipeById(uint(id))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}

@@ -1,16 +1,12 @@
 import Layout from "../../components/Layout";
 import Head from "next/head";
 import { GetStaticProps, GetStaticPaths } from "next";
-import Date from "../../components/Date";
 import { getAllRecipeIds, getRecipeData } from "../../lib/recipes";
 import utilStyles from "../../styles/utils.module.css";
 import path from "path";
 
 const Post = (props) => {
   const { recipeData } = props;
-
-  console.log(props)
-
   return (
     <Layout home={false}>
       {/* <Head>
