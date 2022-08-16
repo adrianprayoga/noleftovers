@@ -27,12 +27,14 @@ export const getAllRecipeIds = async () => {
 };
 
 export const getRecipeData = async (id: string) => {
-  const recipeList = await getAllRecipes();
-  const data = recipeList.find((recipe) => String(recipe.id) === id);
+  try {
+    const response = await axios.get(`${process.env.HOST}/recipe/${id}`);
 
-  return {
-    ...data,
-  };
+    return response.data;
+  } catch (err) {
+    console.error("error in getting recipes");
+    return {};
+  }
 };
 
 export interface createRecipeEntry {
@@ -62,13 +64,7 @@ export const createRecipe = async (recipe: createRecipeEntry) => {
     steps: [],
   };
 
-  data.ingredients = recipe.ingredients
-    .filter((i) => i.name)
-    .map((i) => ({
-      ...i,
-      amount: parseFloat(i.amount),
-      measure: parseInt(i.measure),
-    }));
+  data.ingredients = recipe.ingredients.filter((i) => i.name);
 
   data.steps = recipe.steps.filter((i) => i.text);
 

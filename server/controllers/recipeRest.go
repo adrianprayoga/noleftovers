@@ -181,7 +181,9 @@ func (rs RecipeResource) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	res, _ := json.Marshal(recipe)
+
 	_, err = w.Write(res)
 
 	if err != nil {

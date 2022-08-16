@@ -9,7 +9,7 @@ const Create = (props) => {
   const [formState, setFormState] = useState({
     name: "",
     description: "",
-    ingredients: [{ name: "", amount: "", measure: "" }],
+    ingredients: [{ name: "", amount: "", measure: "1" }],
     steps: [{ text: "" }],
   });
   const [measures, setMeasures] = useState([]);

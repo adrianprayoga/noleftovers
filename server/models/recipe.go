@@ -9,33 +9,36 @@ import (
 )
 
 type Recipe struct {
-	Id          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Author      uint   `json:"author"`
-	ImageLink   string `json:"imageLink"`
-	ModifiedAt  string `json:"modifiedAt"`
-	CreatedAt   string `json:"createdAt"`
+	Id          uint         `json:"id,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Description string       `json:"description,omitempty"`
+	Author      uint         `json:"author,omitempty"`
+	ImageLink   string       `json:"imageLink,omitempty"`
+	ModifiedAt  string       `json:"modifiedAt,omitempty"`
+	CreatedAt   string       `json:"createdAt,omitempty"`
+	Ingredients []Ingredient `json:"ingredients"`
+	Steps       []RecipeStep `json:"steps"`
 }
 
 type RecipeStep struct {
-	Id         uint   `json:"id"`
-	RecipeId   uint   `json:"recipeId"`
+	Id         uint   `json:"id,omitempty"`
+	RecipeId   uint   `json:"recipeId,omitempty"`
 	Position   uint   `json:"position"`
-	Text       string `json:"text"`
-	ModifiedAt string `json:"modifiedAt"`
-	CreatedAt  string `json:"createdAt"`
+	Text       string `json:"text,omitempty"`
+	ModifiedAt string `json:"modifiedAt,omitempty"`
+	CreatedAt  string `json:"createdAt,omitempty"`
 }
 
 type Ingredient struct {
-	Id         uint    `json:"id"`
-	RecipeId   uint    `json:"recipeId"`
-	Position   uint    `json:"position"`
-	Name       string  `json:"name"`
-	Amount     float32 `json:"amount"`
-	Measure    uint    `json:"measure"`
-	ModifiedAt string  `json:"modifiedAt"`
-	CreatedAt  string  `json:"createdAt"`
+	Id              uint           `json:"id,omitempty"`
+	RecipeId        uint           `json:"recipeId,omitempty"`
+	Position        uint           `json:"position"`
+	Name            string         `json:"name"`
+	Amount          float32        `json:"amount,omitempty"`
+	Measure         uint           `json:"measure,omitempty"`
+	MeasureResolved sql.NullString `json:"measureValue,omitempty"`
+	ModifiedAt      string         `json:"modifiedAt,omitempty"`
+	CreatedAt       string         `json:"createdAt,omitempty"`
 }
 
 type RecipeService struct {
@@ -157,14 +160,57 @@ func (service *RecipeService) GetRecipeById(id uint) (*Recipe, error) {
 		Id: id,
 	}
 
-	row := service.DB.QueryRow(`SELECT name, description, author, image_link FROM recipes WHERE id=$1`, id)
-	err := row.Scan(&recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink)
-	if err != nil {
-		fmt.Println("Error authenticating")
-		return nil, fmt.Errorf("user login: %w", err)
-	}
+	sqlQuery := `SELECT 
+		r.name, r.description, r.author, r.image_link, i.position, i.name, i.amount, i.measure, m.name
+	FROM recipes r
+			LEFT JOIN ingredients i ON r.id = i.recipe_id
+			LEFT JOIN measure m 	ON i.measure = m.id
+	WHERE r.id=$1
+	ORDER BY i.position`
 
-	fmt.Printf("Recipe %+v\n", recipe)
+	rows, err := service.DB.Query(sqlQuery, id)
+	if err != nil {
+		fmt.Println("Error getting recipe by id")
+		return nil, fmt.Errorf("error getting recipe by id: %w", err)
+	}
+	defer rows.Close()
+
+	ingredients := make([]Ingredient, 0)
+	for rows.Next() {
+		i := Ingredient{}
+		err = rows.Scan(&recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink, &i.Position, &i.Name, &i.Amount, &i.Measure, &i.MeasureResolved)
+		if err != nil {
+			fmt.Println("Error reading recipe")
+			return nil, fmt.Errorf("error reading recipe: %w", err)
+		}
+
+		ingredients = append(ingredients, i)
+	}
+	recipe.Ingredients = ingredients
+
+	sqlQuery = `SELECT s.text, s.position FROM steps s
+	WHERE s.recipe_id=$1
+	ORDER BY s.position`
+
+	rows, err = service.DB.Query(sqlQuery, id)
+	if err != nil {
+		fmt.Println("Error getting recipe by id")
+		return nil, fmt.Errorf("error getting recipe by id: %w", err)
+	}
+	defer rows.Close()
+
+	steps := make([]RecipeStep, 0)
+	for rows.Next() {
+		step := RecipeStep{}
+		err = rows.Scan(&step.Text, &step.Position)
+		if err != nil {
+			fmt.Println("Error reading recipe")
+			return nil, fmt.Errorf("error reading recipe: %w", err)
+		}
+
+		steps = append(steps, step)
+	}
+	recipe.Steps = steps
 
 	return &recipe, nil
 }

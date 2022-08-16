@@ -7,21 +7,50 @@ import path from "path";
 
 const Post = (props) => {
   const { recipeData } = props;
+
   return (
     <Layout home={false}>
-      {/* <Head>
-        <title>{postData.title}</title>
-      </Head>
-      <h1 className={utilStyles.headingXl}>{postData.title}</h1>
-      <div className={utilStyles.lightText}>
-        <Date dateString={postData.date} />
+      <h1 className="text-4xl font-extrabold leading-6 text-gray-900 my-4">
+        {recipeData.name}
+      </h1>
+      {/* <image></image> */}
+      <div className="text-gray-900 my-5">{recipeData.description}</div>
+      <div className="bg-blue-50 p-5 rounded-md">
+        <h1 className="text-2xl font-medium leading-6 text-gray-900 mb-4">
+          Ingredients List
+        </h1>
+        <ul>
+          {recipeData.ingredients?.map((ingredient) => {
+            const ls = [
+              ingredient.name,
+              ingredient.amount,
+              ingredient.measureValue?.String,
+            ]
+              .filter((e) => e)
+              .join(" ");
+
+            return (
+              <li
+                key={ingredient.position}
+                className="text-gray-900 list-disc mx-5"
+              >{`${ls}`}</li>
+            );
+          })}
+        </ul>
       </div>
-      <br />
-      <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} /> */}
-      <h1>{recipeData.name}</h1>
-      <div>{recipeData.description}</div>
-      
-      
+      <div className="p-5">
+        <h1 className="text-2xl font-medium leading-6 text-gray-900 my-4">
+          Steps
+        </h1>
+        {recipeData.steps?.map((step, i) => {
+          return (
+            <div key={i} className="my-5">
+              <div className="font-bold">{`Step ${i + 1}`}</div>
+              <p>{step.text}</p>
+            </div>
+          );
+        })}
+      </div>
     </Layout>
   );
 };
