@@ -45,8 +45,14 @@ func main() {
 		DB: db,
 	}
 
+	var imageResource controllers.ImageResource
+	imageResource.Service = &models.ImageService{
+		DB: db,
+	}
+
 	r.Mount("/recipe", recipeResource.Routes())
 	r.Mount("/measures", measureResource.Routes())
+	r.Mount("/images", imageResource.Routes())
 
 	fmt.Println("Starting the server on :7171...")
 	http.ListenAndServe(":7171", r)

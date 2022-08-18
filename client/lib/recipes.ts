@@ -54,9 +54,7 @@ export interface createStepsEntry {
   text: string;
 }
 
-export const createRecipe = async (recipe: createRecipeEntry) => {
-  console.log(recipe);
-
+export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
   let data = {
     name: recipe.name,
     description: recipe.description,
@@ -65,23 +63,37 @@ export const createRecipe = async (recipe: createRecipeEntry) => {
   };
 
   data.ingredients = recipe.ingredients.filter((i) => i.name);
-
   data.steps = recipe.steps.filter((i) => i.text);
 
-  const options = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
+  const options = {};
 
   console.log(data);
 
   try {
+    // const response = await axios.post(
+    //   `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
+    //   data,
+    //   options
+    // );
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("recipe", JSON.stringify(data))
+
+    // const res = await axios.post(
+    //   `${process.env.NEXT_PUBLIC_BACKEND_HOST}/images`,
+    //   formData
+    // );
+
+    
+
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
-      data,
+      formData,
       options
     );
+
+    console.log(response);
     return response.data;
   } catch (e) {
     console.error(e);
