@@ -70,30 +70,21 @@ export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
   console.log(data);
 
   try {
-    // const response = await axios.post(
-    //   `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
-    //   data,
-    //   options
-    // );
-
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("recipe", JSON.stringify(data))
-
-    // const res = await axios.post(
-    //   `${process.env.NEXT_PUBLIC_BACKEND_HOST}/images`,
-    //   formData
-    // );
-
-    
-
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
-      formData,
+      data,
       options
     );
 
-    console.log(response);
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/images`,
+      formData,
+    );
+
+    console.log(res);
     return response.data;
   } catch (e) {
     console.error(e);

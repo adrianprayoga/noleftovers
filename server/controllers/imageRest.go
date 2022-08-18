@@ -38,6 +38,7 @@ func (rs ImageResource) Upload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println("Error Retrieving the file")
 		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()

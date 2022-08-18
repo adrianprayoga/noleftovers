@@ -17,7 +17,7 @@ const Create = (props) => {
 
   function handleFileUpload(e) {
     console.log(e.target.files);
-    setFile(URL.createObjectURL(e.target.files[0]));
+    setFile(e.target.files[0]);
   }
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const Create = (props) => {
     };
 
   const handleRecipeCreation = async () => {
-    const response = await createRecipe(formState);
+    const response = await createRecipe(formState, file);
     console.log(response);
     if (!response.error) {
       window.location.href = `http://localhost:3000/recipe/${response.id}`;
