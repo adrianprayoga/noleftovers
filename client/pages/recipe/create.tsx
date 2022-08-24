@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useReducer } from "react";
 import Layout from "../../components/Layout";
+import Alert from "../../components/Alert";
 import { TrashIcon, ExclamationIcon } from "@heroicons/react/outline";
 import TextareaAutosize from "react-textarea-autosize";
 import { createRecipe, getMeasures } from "../../lib/recipes";
@@ -8,12 +9,6 @@ import { ACTION_TYPES, formReducer, INITIAL_STATE } from "./formReducer";
 
 const Create = () => {
   const [formState, dispatch] = useReducer(formReducer, INITIAL_STATE);
-  // const [formState, setFormState] = useState({
-  //   name: "",
-  //   description: "",
-  //   ingredients: [{ name: "", amount: "", measure: "1" }],
-  //   steps: [{ text: "" }],
-  // });
   const [measures, setMeasures] = useState([]);
   const [file, setFile] = useState("");
   const [image, setImage] = useState("");
@@ -59,6 +54,12 @@ const Create = () => {
     });
   };
 
+  const handleRemoveError = () => {
+    let newValidationError = { ...validationError };
+    delete newValidationError["overall"];
+    setValidationError(newValidationError);
+  };
+
   const handleRecipeCreation = async () => {
     let newValidationError = {};
 
@@ -82,16 +83,20 @@ const Create = () => {
       newValidationError["steps"] = "At least one recipe step is required";
     }
 
-    setValidationError(newValidationError);
     if (Object.keys(newValidationError).length > 0) {
+      setValidationError(newValidationError);
       return;
     }
 
     const response = await createRecipe(formState, file);
     if (!response.error) {
-      // TODO: update link
       window.location.href = `http://localhost:3000/recipe/${response.id}`;
+    } else {
+      newValidationError["overall"] =
+        "There seems to be an issue creating your recipe. Please make sure that all inputs are correct.";
     }
+
+    setValidationError(newValidationError);
   };
 
   return (
@@ -107,6 +112,13 @@ const Create = () => {
                 <p className="mt-1 text-sm text-gray-600"></p>
               </div>
             </div>
+            {validationError["overall"] && (
+              <Alert
+                mainMessage="Something went wrong!"
+                subMessage={validationError["overall"]}
+                onClick={handleRemoveError}
+              />
+            )}
             <div className="mt-5 md:mt-0">
               <form action="#" method="POST">
                 <div className="shadow sm:rounded-md sm:overflow-hidden">
@@ -152,10 +164,12 @@ const Create = () => {
 
                     <div>
                       <InputLabel label="Picture" />
-                      <div className={clsx(
-                        "mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md",
-                        validationError["image"] && "border-red-500"
-                      )}>
+                      <div
+                        className={clsx(
+                          "mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md",
+                          validationError["image"] && "border-red-500"
+                        )}
+                      >
                         <div className="space-y-1 text-center">
                           {file ? (
                             <img
@@ -193,6 +207,7 @@ const Create = () => {
                                 name="file-upload"
                                 type="file"
                                 className="sr-only"
+                                accept="image/x-png,image/jpg,image/jpeg"
                                 onChange={handleFileUpload}
                               />
                             </label>
@@ -302,6 +317,7 @@ const Create = () => {
                       <Error error={validationError["steps"]} />
                     </div>
                   </div>
+
                   <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                     <button
                       type="button"
