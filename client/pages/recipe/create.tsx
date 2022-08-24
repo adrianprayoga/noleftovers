@@ -1,23 +1,27 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useReducer } from "react";
 import Layout from "../../components/Layout";
-import { TrashIcon } from "@heroicons/react/outline";
+import { TrashIcon, ExclamationIcon } from "@heroicons/react/outline";
 import TextareaAutosize from "react-textarea-autosize";
 import { createRecipe, getMeasures } from "../../lib/recipes";
+import clsx from "clsx";
+import { ACTION_TYPES, formReducer, INITIAL_STATE } from "./formReducer";
 
-const Create = (props) => {
-  const { recipeData } = props;
-  const [formState, setFormState] = useState({
-    name: "",
-    description: "",
-    ingredients: [{ name: "", amount: "", measure: "1" }],
-    steps: [{ text: "" }],
-  });
+const Create = () => {
+  const [formState, dispatch] = useReducer(formReducer, INITIAL_STATE);
+  // const [formState, setFormState] = useState({
+  //   name: "",
+  //   description: "",
+  //   ingredients: [{ name: "", amount: "", measure: "1" }],
+  //   steps: [{ text: "" }],
+  // });
   const [measures, setMeasures] = useState([]);
   const [file, setFile] = useState("");
+  const [image, setImage] = useState("");
+  const [validationError, setValidationError] = useState({});
 
   function handleFileUpload(e) {
-    console.log(e.target.files);
     setFile(e.target.files[0]);
+    setImage(URL.createObjectURL(e.target.files[0]));
   }
 
   useEffect(() => {
@@ -29,46 +33,65 @@ const Create = (props) => {
     fetchMeasures();
   }, []);
 
-  const handleChange = (name) => (event) => {
-    setFormState((state) => ({
-      ...state,
-      [name]: event.target.value,
-    }));
+  const handleChange = (event) => {
+    dispatch({
+      type: ACTION_TYPES.UPDATE_TEXT,
+      payload: { name: event.target.name, value: event.target.value },
+    });
   };
 
-  const handleListChange =
-    (name: string, prop: string, item_i: number) => (event) => {
-      setFormState((state) => {
-        let newState = { ...state };
-        newState[name][item_i][prop] = event.target.value;
+  const handleItemDeletion = (name, position) => (event) => {
+    dispatch({
+      type: ACTION_TYPES.DELETE_ITEM,
+      payload: { name: name, position: position },
+    });
+  };
 
-        const lastItem = newState[name][newState[name].length - 1];
-        if (Object.values(lastItem).find((i) => i)) {
-          const newDefault = { ...lastItem };
-          Object.keys(newDefault).forEach((k) => (newDefault[k] = ""));
-
-          newState[name] = newState[name].concat(newDefault);
-        }
-
-        return newState;
-      });
-    };
+  const handleListChange = (name: string, position: number) => (event) => {
+    dispatch({
+      type: ACTION_TYPES.LIST_UPDATE,
+      payload: {
+        name: name,
+        position: position,
+        prop: event.target.name,
+        value: event.target.value,
+      },
+    });
+  };
 
   const handleRecipeCreation = async () => {
+    let newValidationError = {};
+
+    if (!formState.name) {
+      newValidationError["name"] = "this field is required";
+    }
+
+    if (!formState.description) {
+      newValidationError["description"] = "this field is required";
+    }
+
+    if (!file) {
+      newValidationError["image"] = "please upload one image";
+    }
+
+    if (formState.ingredients?.filter((e) => e.name).length === 0) {
+      newValidationError["ingredients"] = "At least one ingredient is required";
+    }
+
+    if (formState.steps?.filter((e) => e.text).length === 0) {
+      newValidationError["steps"] = "At least one recipe step is required";
+    }
+
+    setValidationError(newValidationError);
+    if (Object.keys(newValidationError).length > 0) {
+      return;
+    }
+
     const response = await createRecipe(formState, file);
-    console.log(response);
     if (!response.error) {
+      // TODO: update link
       window.location.href = `http://localhost:3000/recipe/${response.id}`;
     }
-  };
-
-  const handleItemDeletion = (name, item_i) => {
-    setFormState((state) => {
-      let newState = { ...state };
-      newState[name] = newState[name].filter((_, i) => i !== item_i);
-
-      return newState;
-    });
   };
 
   return (
@@ -96,12 +119,16 @@ const Create = (props) => {
                             type="text"
                             name="name"
                             id="name"
-                            className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300"
+                            className={clsx(
+                              "focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300",
+                              validationError["name"] && "border-red-500"
+                            )}
                             placeholder="recipe name"
                             value={formState["name"]}
-                            onChange={handleChange("name")}
+                            onChange={handleChange}
                           />
                         </div>
+                        <Error error={validationError["name"]} />
                       </div>
                     </div>
 
@@ -109,43 +136,58 @@ const Create = (props) => {
                       <InputLabel label="Description" />
                       <div className="mt-1">
                         <TextareaAutosize
-                          className=" shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
+                          className={clsx(
+                            "focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300",
+                            validationError["description"] && "border-red-500"
+                          )}
                           placeholder="brief description of the recipe"
                           value={formState["description"]}
-                          onChange={handleChange("description")}
+                          onChange={handleChange}
                           minRows={5}
+                          name="description"
                         />
                       </div>
-                      {/* <p className="mt-2 text-sm text-gray-500">
-                        Brief description for your profile. URLs are
-                        hyperlinked.
-                      </p> */}
+                      <Error error={validationError["description"]} />
                     </div>
 
                     <div>
                       <InputLabel label="Picture" />
-                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                      <div className={clsx(
+                        "mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md",
+                        validationError["image"] && "border-red-500"
+                      )}>
                         <div className="space-y-1 text-center">
-                          <svg
-                            className="mx-auto h-12 w-12 text-gray-400"
-                            stroke="currentColor"
-                            fill="none"
-                            viewBox="0 0 48 48"
-                            aria-hidden="true"
-                          >
-                            <path
-                              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                          {file ? (
+                            <img
+                              src={image}
+                              width="100px"
+                              height="100px"
+                              alt="selected image..."
+                              className="mx-auto"
                             />
-                          </svg>
-                          <div className="flex text-sm text-gray-600">
+                          ) : (
+                            <svg
+                              className="mx-auto h-12 w-12 text-gray-400"
+                              stroke="currentColor"
+                              fill="none"
+                              viewBox="0 0 48 48"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+
+                          <div className="text-sm text-gray-600">
                             <label
                               htmlFor="file-upload"
-                              className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                              className=" cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                             >
-                              <span>Upload a file</span>
+                              <span>Upload your image</span>
                               <input
                                 id="file-upload"
                                 name="file-upload"
@@ -154,23 +196,13 @@ const Create = (props) => {
                                 onChange={handleFileUpload}
                               />
                             </label>
-                            {file && (
-                                <img
-                                  src={file}
-                                  width="300px"
-                                  height="300px"
-                                  alt="selected image..."
-                                />
-                                
-                            )}
-
-                            <p className="pl-1">or drag and drop</p>
                           </div>
                           <p className="text-xs text-gray-500">
                             PNG or JPG up to 10MB
                           </p>
                         </div>
                       </div>
+                      <Error error={validationError["image"]} />
                     </div>
 
                     <div className="grid grid-cols-1 gap-1">
@@ -186,11 +218,8 @@ const Create = (props) => {
                                 type="text"
                                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-r-md sm:text-sm border-gray-300"
                                 value={formState["ingredients"][i]["name"]}
-                                onChange={handleListChange(
-                                  "ingredients",
-                                  "name",
-                                  i
-                                )}
+                                name="name"
+                                onChange={handleListChange("ingredients", i)}
                               />
 
                               <span className="inline-flex items-center text-sm text-gray-400 p-2">
@@ -201,11 +230,8 @@ const Create = (props) => {
                                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-1/4 rounded-md sm:text-sm border-gray-300"
                                 placeholder="0"
                                 value={formState["ingredients"][i]["amount"]}
-                                onChange={handleListChange(
-                                  "ingredients",
-                                  "amount",
-                                  i
-                                )}
+                                name="amount"
+                                onChange={handleListChange("ingredients", i)}
                               />
                             </div>
 
@@ -213,11 +239,8 @@ const Create = (props) => {
                               autoComplete="measure"
                               className="ml-2 mt-1 block w-1/4 py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                               value={formState["ingredients"][i]["measure"]}
-                              onChange={handleListChange(
-                                "ingredients",
-                                "measure",
-                                i
-                              )}
+                              name="measure"
+                              onChange={handleListChange("ingredients", i)}
                             >
                               {measures
                                 .filter((measure) => measure.active)
@@ -232,9 +255,8 @@ const Create = (props) => {
                               <button
                                 type="button"
                                 className="col-span-1 p-2"
-                                onClick={() =>
-                                  handleItemDeletion("ingredients", i)
-                                }
+                                name="test"
+                                onClick={handleItemDeletion("ingredients", i)}
                               >
                                 <TrashIcon className="h-6 w-6 text-gray-300" />
                               </button>
@@ -242,6 +264,7 @@ const Create = (props) => {
                           </div>
                         );
                       })}
+                      <Error error={validationError["ingredients"]} />
                     </div>
 
                     <div className="grid grid-cols-1 gap-1">
@@ -256,7 +279,8 @@ const Create = (props) => {
                               <TextareaAutosize
                                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-r-md sm:text-sm border-gray-300"
                                 value={formState["steps"][i]["text"]}
-                                onChange={handleListChange("steps", "text", i)}
+                                onChange={handleListChange("steps", i)}
+                                name="text"
                                 minRows={1}
                                 maxRows={10}
                               />
@@ -264,9 +288,10 @@ const Create = (props) => {
 
                             {formState["steps"]?.length > 1 && (
                               <button
+                                name="steps"
                                 type="button"
                                 className="col-span-1 p-2"
-                                onClick={() => handleItemDeletion("steps", i)}
+                                onClick={handleItemDeletion("steps", i)}
                               >
                                 <TrashIcon className="h-6 w-6 text-gray-300" />
                               </button>
@@ -274,6 +299,7 @@ const Create = (props) => {
                           </div>
                         );
                       })}
+                      <Error error={validationError["steps"]} />
                     </div>
                   </div>
                   <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
@@ -302,5 +328,17 @@ const InputLabel = ({ label }) => {
     <label htmlFor={label} className="block text-sm font-medium text-gray-700">
       {label}
     </label>
+  );
+};
+
+const Error = (props) => {
+  const text = props.error ? props.error : "This is a required field";
+  return (
+    props.error && (
+      <div className="mt-2 ml-1 flex">
+        <ExclamationIcon className="h-4 w-4 text-red-500" />
+        <div className="ml-1 text-xs text-red-500 align-middle">{text}</div>
+      </div>
+    )
   );
 };

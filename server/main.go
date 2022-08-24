@@ -39,6 +39,9 @@ func main() {
 	recipeResource.Service = &models.RecipeService{
 		DB: db,
 	}
+	recipeResource.ImageService = &models.ImageService{
+		DB: db,
+	}
 
 	var measureResource controllers.MeasureResource
 	measureResource.Service = &models.MeasureService{

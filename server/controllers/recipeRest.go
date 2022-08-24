@@ -8,8 +8,11 @@ import (
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"net/http"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type createRecipeRequest struct {
@@ -36,7 +39,8 @@ type ApiError struct {
 }
 
 type RecipeResource struct {
-	Service *models.RecipeService
+	Service      *models.RecipeService
+	ImageService *models.ImageService
 }
 
 func (rs RecipeResource) Routes() chi.Router {
@@ -97,17 +101,15 @@ func (r createRecipeRequest) IsValid() error {
 }
 
 func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
-	var recipe createRecipeRequest
 
-	decoder := json.NewDecoder(r.Body)
+	var recipe createRecipeRequest
+	decoder := json.NewDecoder(strings.NewReader(r.FormValue("recipe")))
 	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&recipe)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 
 	if err = recipe.IsValid(); err != nil {
 		// TODO: refactor out
@@ -125,12 +127,45 @@ func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var maxUploadSize int64 = 10 << 20 // 10 binary shifted 20 times. 10 * 2^20 = 10 MB
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
+	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
+		http.Error(w, "The uploaded image is too big. Please use an image less than 10MB in size", http.StatusBadRequest)
+		return
+	}
+
+	file, fileHeader, err := r.FormFile("image")
+	if err != nil {
+		fmt.Println("Error Retrieving the file")
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fmt.Printf("Uploaded File: %+v\n", fileHeader.Filename)
+	fmt.Printf("File Size: %+v\n", fileHeader.Size)
+
+	errCode, err := rs.ImageService.ValidateImage(file, fileHeader)
+	if err != nil {
+		http.Error(w, err.Error(), errCode)
+		return
+	}
+
+	id := uuid.New().String()
+	fileName := fmt.Sprintf("%s%s", id, filepath.Ext(fileHeader.Filename))
+	if err != rs.ImageService.UploadImage(file, fileName) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("Successfully Uploaded File")
+
 	// Map to domain entity
 	rec := models.Recipe{
 		Name:        recipe.Name,
 		Description: recipe.Description,
 		Author:      recipe.Author,
-		ImageLink:   `/images/`, // TODO: update
+		ImageLink:   fileName,
 	}
 
 	ingredients := make([]models.Ingredient, len(recipe.Ingredients))
@@ -161,6 +196,7 @@ func (rs RecipeResource) Create(w http.ResponseWriter, r *http.Request) {
 	newRecipe, err := rs.Service.CreateRecipe(rec, steps, ingredients)
 	if err != nil {
 		fmt.Println("Something went wrong when creating an object")
+		rs.ImageService.RemoveImage(fileName)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 

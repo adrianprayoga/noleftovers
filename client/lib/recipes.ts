@@ -62,29 +62,30 @@ export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
     steps: [],
   };
 
-  data.ingredients = recipe.ingredients.filter((i) => i.name);
+  data.ingredients = recipe.ingredients.filter((i) => i.name).map(ingredient => {
+    let temp = {}
+    Object.keys(ingredient).forEach(k => {
+      if (ingredient[k]) {
+        temp[k] = ingredient[k]
+      }
+    })
+    return temp
+  });
   data.steps = recipe.steps.filter((i) => i.text);
 
-  const options = {};
 
-  console.log(data);
 
   try {
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
-      data,
-      options
-    );
-
     const formData = new FormData();
     formData.append("image", file);
+    formData.append("recipe", JSON.stringify(data));
 
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/images`,
-      formData,
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
+      formData
     );
 
-    console.log(res);
+    console.log(response);
     return response.data;
   } catch (e) {
     console.error(e);

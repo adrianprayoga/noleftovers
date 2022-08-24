@@ -13,4 +13,6 @@ VALUES
     ('litre'),
     ('tsp'),
     ('tbsp'),
-    ('cup');
+    ('cup'),
+    ('pinch'),
+    ('as needed');
