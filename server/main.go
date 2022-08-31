@@ -2,6 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/adrianprayoga/noleftovers/server/auth"
+	"github.com/adrianprayoga/noleftovers/server/internals/configs"
+	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
+	"github.com/spf13/viper"
+
+	//"github.com/adrianprayoga/noleftovers/server/configs"
 	"github.com/adrianprayoga/noleftovers/server/controllers"
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
@@ -17,6 +23,11 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	configs.InitializeViper()
+	logger.InitializeZapCustomLogger()
+	auth.InitializeOAuthGoogle()
+	auth.InitSessions()
+
 	cfg := models.DefaultPostgresConfig()
 	db, err := models.Open(cfg)
 	if err != nil {
@@ -32,7 +43,7 @@ func main() {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 	}))
 
 	var recipeResource controllers.RecipeResource
@@ -53,10 +64,17 @@ func main() {
 		DB: db,
 	}
 
+	var authResource controllers.AuthResource
+	authResource.Service = &models.UserService{
+		DB: db,
+	}
+
 	r.Mount("/recipe", recipeResource.Routes())
 	r.Mount("/measures", measureResource.Routes())
 	r.Mount("/images", imageResource.Routes())
+	r.Mount("/auth", authResource.Routes())
 
-	fmt.Println("Starting the server on :7171...")
-	http.ListenAndServe(":7171", r)
+
+	fmt.Println("Starting the server on :" +viper.GetString("port"))
+	http.ListenAndServe(":"+viper.GetString("port"), r)
 }

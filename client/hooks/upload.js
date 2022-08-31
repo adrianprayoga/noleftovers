@@ -18,12 +18,11 @@ const useUpload = () => {
       formData.append("image", image);
       const res = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images`, formData);
       if (res.data.data) {
-        console.log(res.data);
         setUploadedImage(res.data.data);
       }
 
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setImage(null);
       setLoading(false);

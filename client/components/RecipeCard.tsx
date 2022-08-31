@@ -11,7 +11,6 @@ interface RecipeHighlight {
 const basePath = "/images/recipe";
 
 const RecipeCard = (props: RecipeHighlight) => {
-  console.log(props);
   return (
     <Link href={`/recipe/${props.id}`}>
 

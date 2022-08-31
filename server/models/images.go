@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"github.com/spf13/viper"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -37,8 +38,7 @@ func (service *ImageService) ValidateImage(file multipart.File, fileHeader *mult
 }
 
 func (service *ImageService) UploadImage(file io.Reader, fileName string) error {
-	// TODO: change location
-	basePath := "/Users/apr/noleftovers/client/public/images/recipe"
+	basePath := viper.GetString("imageLocation")
 	err := os.MkdirAll(basePath, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error creating directory: %w", err)
@@ -59,8 +59,7 @@ func (service *ImageService) UploadImage(file io.Reader, fileName string) error 
 }
 
 func (service *ImageService) RemoveImage(fileName string) error {
-	// TODO: change location
-	basePath := "/Users/apr/noleftovers/client/public/images/recipe"
+	basePath := viper.GetString("imageLocation")
 	err := os.MkdirAll(basePath, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error creating directory: %w", err)

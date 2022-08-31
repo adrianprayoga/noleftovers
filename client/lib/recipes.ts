@@ -84,8 +84,6 @@ export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
       `${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe`,
       formData
     );
-
-    console.log(response);
     return response.data;
   } catch (e) {
     console.error(e);

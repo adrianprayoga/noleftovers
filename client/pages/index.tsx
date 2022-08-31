@@ -4,8 +4,44 @@ import utilStyles from "../styles/utils.module.css";
 import { getAllRecipes } from "../lib/recipes";
 import RecipeGrid from "../components/RecipeGrid";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_BACKEND_HOST}`;
+axios.defaults.withCredentials = true;
 
 export default function Home({ allReciplesData }) {
+  const [appState, setAppState] = useState({
+    user: {},
+    error: null,
+    authenticated: false,
+  });
+
+  // useEffect(() => {
+  //   const getUser = async () => {
+  //     try {
+  //       const res = await axios.get(`/auth/success`);
+  //       if (res.status == 200) {
+  //         setAppState({
+  //           user: res.data.user,
+  //           authenticated: true,
+  //           error: null,
+  //         });
+  //       }
+  //       console.log(res);
+  //     } catch (err) {
+  //       console.error("call error", err);
+  //       setAppState({
+  //         user: {},
+  //         authenticated: false,
+  //         error: "user is not authenticated",
+  //       });
+  //     }
+  //   };
+
+  //   getUser();
+  // }, []);
+
   return (
     <Layout home>
       <Head>
