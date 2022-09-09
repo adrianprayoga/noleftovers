@@ -62,18 +62,18 @@ export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
     steps: [],
   };
 
-  data.ingredients = recipe.ingredients.filter((i) => i.name).map(ingredient => {
-    let temp = {}
-    Object.keys(ingredient).forEach(k => {
-      if (ingredient[k]) {
-        temp[k] = ingredient[k]
-      }
-    })
-    return temp
-  });
+  data.ingredients = recipe.ingredients
+    .filter((i) => i.name)
+    .map((ingredient) => {
+      let temp = {};
+      Object.keys(ingredient).forEach((k) => {
+        if (ingredient[k]) {
+          temp[k] = ingredient[k];
+        }
+      });
+      return temp;
+    });
   data.steps = recipe.steps.filter((i) => i.text);
-
-
 
   try {
     const formData = new FormData();
@@ -108,4 +108,36 @@ export const getMeasures = async (): Promise<any[]> => {
 
     return [];
   }
+};
+
+export const getFavorites = async (): Promise<any[]> => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_HOST}/favorites`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("error in getting favorites");
+    return [];
+  }
+};
+
+export const addFavorites = async (recipe_id: number): Promise<any> => {
+  // try {
+  //   const response = await
+  //   return recipe_id;
+  // } catch (err) {
+  //   console.error("error in adding favorites");
+  //   return -1;
+  // }
+
+  return axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/favorites`, {
+    recipe_id: recipe_id,
+  });
+};
+
+export const removeFavorites = async (recipe_id: number): Promise<any> => {
+  return axios.delete(
+    `${process.env.NEXT_PUBLIC_BACKEND_HOST}/favorites/${recipe_id}`
+  );
 };

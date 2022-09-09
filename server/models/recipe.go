@@ -41,6 +41,11 @@ type Ingredient struct {
 	CreatedAt       string         `json:"createdAt,omitempty"`
 }
 
+type Favorites struct {
+	RecipeId uint `json:"recipe_id"`
+	UserId   uint `json:"user_id"`
+}
+
 type RecipeService struct {
 	DB *sql.DB
 }

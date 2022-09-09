@@ -69,12 +69,17 @@ func main() {
 		DB: db,
 	}
 
+	var favoritesResource controllers.FavoritesResource
+	favoritesResource.Service = &models.FavoritesService{
+		DB: db,
+	}
+
 	r.Mount("/recipe", recipeResource.Routes())
 	r.Mount("/measures", measureResource.Routes())
 	r.Mount("/images", imageResource.Routes())
 	r.Mount("/auth", authResource.Routes())
+	r.Mount("/favorites", favoritesResource.Routes())
 
-
-	fmt.Println("Starting the server on :" +viper.GetString("port"))
+	fmt.Println("Starting the server on :" + viper.GetString("port"))
 	http.ListenAndServe(":"+viper.GetString("port"), r)
 }

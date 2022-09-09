@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Layout, { siteTitle } from "../components/Layout";
 import utilStyles from "../styles/utils.module.css";
-import { getAllRecipes } from "../lib/recipes";
+import { getAllRecipes, getFavorites } from "../lib/recipes";
 import RecipeGrid from "../components/RecipeGrid";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ import useFavorites from "../hooks/favorites-hooks";
 axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_BACKEND_HOST}`;
 axios.defaults.withCredentials = true;
 
-export default function Home({ allReciplesData, appState }) {
+export default function Favorites({ allReciplesData, appState }) {
   const { favorites, handleAddFavorite, handleRemoveFavorite } = useFavorites();
 
   return (
@@ -19,11 +19,19 @@ export default function Home({ allReciplesData, appState }) {
       <Head>
         <title>{siteTitle}</title>
       </Head>
+
+      {/* {user: {…}, authenticated: true, error: null}
+authenticated: true
+error: null
+user: {id: 0, email: 'aprayoga1994@gmail.com', password_hash: '', auth_method: '', oauth_id: '', …}
+[[Prototype]]: Object */}
+
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
         <RecipeGrid
-          recipeList={allReciplesData}
+          recipeList={allReciplesData.filter(
+            (recipe) => favorites.indexOf(recipe.id) !== -1
+          )}
           favorites={favorites}
-          handleAddFavorite={handleAddFavorite}
           handleRemoveFavorite={handleRemoveFavorite}
         />
       </section>

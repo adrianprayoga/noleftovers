@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/adrianprayoga/noleftovers/server/auth"
 	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
@@ -28,25 +28,38 @@ func (rs AuthResource) Routes() chi.Router {
 }
 
 type AuthResponse struct {
-	Success bool `json:"success"`
-	Message string `json:"message"`
-	User models.User `json:"user"`
-	Cookie string `json:"cookie"`
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	User    models.User `json:"user"`
+	Cookie  string      `json:"cookie"`
+}
+
+func GetUserId(r *http.Request) (uint, error) {
+	session, err := auth.Store.Get(r, "session-name")
+	if err != nil {
+		return 0, errors.New("internal server error")
+	}
+
+	if res, ok := session.Values["id"].(uint); ok {
+		logger.Log.Warn("user id found")
+		return res, nil
+	} else {
+		logger.Log.Warn("user is unauthenticated")
+		return 0, errors.New("unauthorized")
+	}
 }
 
 func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
-	// if r.user exist, return true
-
-
-	logger.Log.Info("", zap.String("agent", r.UserAgent()))
-
 	session, err := auth.Store.Get(r, "session-name")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if _, ok := session.Values["authenticated"].(bool); ok{
+	if _, ok := session.Values["authenticated"].(bool); ok {
+
+		logger.Log.Info("user is successfully authenticated via handleSuccess")
+
 		w.Header().Set("Content-Type", "application/json")
 		res, _ := json.Marshal(AuthResponse{
 			Success: true,
@@ -83,7 +96,6 @@ func (rs AuthResource) HandleFailure(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
 
 func (rs AuthResource) HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	auth.HandleLogin(w, r, auth.OauthConfGl, auth.OauthStateStringGl)
@@ -145,29 +157,22 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 		var userResponse auth.GoogleCallbackResponse
 		err = json.Unmarshal([]byte(string(response)), &userResponse)
 		newUser := models.NewUser{
-			Email: userResponse.Email,
+			Email:      userResponse.Email,
 			AuthMethod: "Google",
-			OauthId: userResponse.Id,
-			Picture: userResponse.Picture,
+			OauthId:    userResponse.Id,
+			Picture:    userResponse.Picture,
 		}
 
 		logger.Log.Info("Creating / updating user based on oauth input")
-		_, err = rs.Service.CreateOrUpdateByOauth(newUser)
-
-
-
-		cookie := http.Cookie{
-			Name:  "email",
-			Value: newUser.Email,
-			Path:  "/",
-		}
-		http.SetCookie(w, &cookie)
+		user, err := rs.Service.CreateOrUpdateByOauth(newUser)
 
 		session, _ := auth.Store.Get(r, "session-name")
 		// Set some session values.
+		session.Options.MaxAge = 60 * 60 * 24
 		session.Values["authenticated"] = true
 		session.Values["email"] = newUser.Email
 		session.Values["picture"] = newUser.Picture
+		session.Values["id"] = user.Id
 
 		err = session.Save(r, w)
 		if err != nil {
@@ -175,6 +180,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 			return
 		}
 
+		//TODO: change
 		http.Redirect(w, r, "http://localhost:3000", http.StatusTemporaryRedirect)
 
 		return
