@@ -9,7 +9,6 @@ const useFavorites = () => {
       try {
         const res = await getFavorites();
         setFavorites(res);
-        console.log(res);
       } catch (err) {
         console.error("call error", err);
       }
@@ -30,7 +29,6 @@ const useFavorites = () => {
   const handleRemoveFavorite = async (recipe_id) => {
     try {
       await removeFavorites(recipe_id);
-      console.log(favorites.filter((f) => f !== recipe_id));
       setFavorites(favorites.filter((f) => f !== recipe_id));
     } catch (error) {
       console.error(error);

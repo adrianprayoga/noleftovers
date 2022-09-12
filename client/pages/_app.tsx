@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import { AppProps } from "next/app";
-import { useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import { UserContext } from "../hooks/userContext";
 import axios from "axios";
 
 function App({ Component, pageProps }: AppProps) {
@@ -21,7 +22,6 @@ function App({ Component, pageProps }: AppProps) {
             error: null,
           });
         }
-        console.log(res);
       } catch (err) {
         console.error("call error", err);
         setAppState({
@@ -35,7 +35,11 @@ function App({ Component, pageProps }: AppProps) {
     !appState.authenticated && getUser();
   }, [appState.authenticated]);
 
-  return <Component {...pageProps} appState={appState}/>;
+  return (
+    <UserContext.Provider value={appState}>
+      <Component {...pageProps}/>;
+    </UserContext.Provider>
+  );
 }
 
 export default App;

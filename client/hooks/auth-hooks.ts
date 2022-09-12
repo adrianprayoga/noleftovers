@@ -22,7 +22,6 @@ const useAuth = () => {
             error: null,
           });
         }
-        console.log(res);
       } catch (err) {
         console.error("call error", err);
         setState({

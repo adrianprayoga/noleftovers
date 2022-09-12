@@ -23,6 +23,7 @@ func (rs AuthResource) Routes() chi.Router {
 	r.Get("/callback-gl", rs.CallBackFromGoogle)
 	r.Get("/success", rs.HandleSuccess)
 	r.Get("/failed", rs.HandleFailure)
+	r.Get("/logout", rs.HandleLogout)
 
 	return r
 }
@@ -81,20 +82,32 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs AuthResource) HandleFailure(w http.ResponseWriter, r *http.Request) {
-	// if r.user exist, return true
+	w.Header().Set("Content-Type", "application/json")
+	res, _ := json.Marshal(AuthResponse{
+		Success: false,
+		Message: "failed to authenticate user",
+	})
+	_, err := w.Write(res)
 
-	if true {
-		w.Header().Set("Content-Type", "application/json")
-		res, _ := json.Marshal(AuthResponse{
-			Success: false,
-			Message: "failed to authenticate user",
-		})
-		_, err := w.Write(res)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	w.WriteHeader(http.StatusUnauthorized)
+}
+
+func (rs AuthResource) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	session, _ := auth.Store.Get(r, "session-name")
+
+	session.Options.MaxAge = -1
+	err := session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//TODO: change
+	http.Redirect(w, r, "http://localhost:3000", http.StatusTemporaryRedirect)
+
 }
 
 func (rs AuthResource) HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {

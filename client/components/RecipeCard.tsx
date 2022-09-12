@@ -15,8 +15,6 @@ interface RecipeHighlight {
 const basePath = "/images/recipe";
 
 const RecipeCard = (props: RecipeHighlight) => {
-  console.log(props);
-
   return (
     <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
       {props.imageLink && (

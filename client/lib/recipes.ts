@@ -123,14 +123,6 @@ export const getFavorites = async (): Promise<any[]> => {
 };
 
 export const addFavorites = async (recipe_id: number): Promise<any> => {
-  // try {
-  //   const response = await
-  //   return recipe_id;
-  // } catch (err) {
-  //   console.error("error in adding favorites");
-  //   return -1;
-  // }
-
   return axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/favorites`, {
     recipe_id: recipe_id,
   });
