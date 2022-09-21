@@ -1,17 +1,14 @@
 import Link from "next/link";
-import Image from "next/image";
-import navStyles from "../styles/Nav.module.css";
 import { Fragment, useContext, useEffect, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { BellIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
-import googleSignIn from "../public/google_assets/web/1x/btn_google_signin_dark_normal_web.png";
-import useAuth from "../hooks/auth-hooks";
 import SearchBar from "./SearchBar";
 import { UserContext } from "../hooks/userContext";
 
 const navigation = [
   { name: "Recipes", href: "/" },
   { name: "My Favorites", href: "/favorites" },
+  { name: "Create", href: "/recipe/create" },
 ];
 
 function classNames(...classes) {
@@ -86,9 +83,9 @@ const Nav = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex">
+              {/* <div className="flex">
                 <SearchBar />
-              </div>
+              </div> */}
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 {userContext.authenticated && (
                   <>

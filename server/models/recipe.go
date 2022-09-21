@@ -3,7 +3,10 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
 	"github.com/jinzhu/copier"
+	"github.com/lib/pq"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 )
@@ -141,6 +144,69 @@ func (service *RecipeService) GetRecipes() ([]Recipe, error) {
 	rows, err := service.DB.Query(`SELECT id, name, description, author, image_link FROM recipes`)
 	if err != nil {
 		fmt.Println("Error getting recipe list")
+		return nil, fmt.Errorf("error getting recipe list: %w", err)
+	}
+	defer rows.Close()
+
+	var recipes []Recipe
+	for rows.Next() {
+		recipe := Recipe{}
+		err = rows.Scan(&recipe.Id, &recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink)
+		if err != nil {
+			fmt.Println("Error reading recipe")
+			return nil, fmt.Errorf("error reading recipe: %w", err)
+		}
+
+		recipes = append(recipes, recipe)
+	}
+
+	return recipes, nil
+}
+
+func (service *RecipeService) SearchRecipes(keys []string) ([]Recipe, error) {
+	if len(keys) == 0 {
+		return make([]Recipe, 0), nil
+	}
+
+	searchQuery := `SELECT DISTINCT recipes.id FROM recipes LEFT JOIN ingredients ON recipes.id = ingredients.recipe_id`
+
+	searchCriterias := make([]string, 0)
+	searchTerms := make([]any, len(keys)*2)
+	count := 1
+	for _, k := range keys {
+		for _, col := range []string{"recipes.description", "ingredients.name"} {
+			searchCriterias = append(searchCriterias, fmt.Sprintf(`LOWER(%s) LIKE '%%' || $%d || '%%' `, col, count))
+			searchTerms[count-1] = k
+			count++
+		}
+	}
+
+	searchQuery = fmt.Sprintf("%s WHERE %s", searchQuery, strings.Join(searchCriterias, " OR "))
+
+	// first we search for the ids of the recipe which contains the search criteria
+	var recipeIds []int
+	rows, err := service.DB.Query(searchQuery, searchTerms...)
+	if err != nil {
+		logger.Log.Error("error getting filtered recipe list", zap.Error(err))
+		return nil, fmt.Errorf("error getting recipe list: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var recipeId int
+		err = rows.Scan(&recipeId)
+		if err != nil {
+			fmt.Println("Error reading recipe")
+			return nil, fmt.Errorf("error reading recipe: %w", err)
+		}
+
+		recipeIds = append(recipeIds, recipeId)
+	}
+
+	// then we get the details of the recipe based on the id
+	// this is done in 2 steps in case we have more than 1 queries to search for the recipes
+	rows, err = service.DB.Query(`SELECT id, name, description, author, image_link FROM recipes WHERE id = ANY($1)`, pq.Array(recipeIds))
+	if err != nil {
+		logger.Log.Error("error getting filtered recipe list", zap.Error(err))
 		return nil, fmt.Errorf("error getting recipe list: %w", err)
 	}
 	defer rows.Close()

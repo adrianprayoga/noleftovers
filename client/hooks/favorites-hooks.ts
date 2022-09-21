@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { addFavorites, getFavorites, removeFavorites } from "../lib/recipes";
 
-const useFavorites = () => {
+const useFavorites = (userContext) => {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
@@ -14,8 +14,8 @@ const useFavorites = () => {
       }
     };
 
-    getF();
-  }, []);
+    userContext.authenticated && getF();
+  }, [userContext.authenticated]);
 
   const handleAddFavorite = async (recipe_id) => {
     try {

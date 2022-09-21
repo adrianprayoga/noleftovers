@@ -1,37 +1,50 @@
 import Head from "next/head";
 import Layout, { siteTitle } from "../components/Layout";
 import utilStyles from "../styles/utils.module.css";
-import { getAllRecipes } from "../lib/recipes";
+import { getAllRecipes, searchRecipes } from "../lib/recipes";
 import RecipeGrid from "../components/RecipeGrid";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import useFavorites from "../hooks/favorites-hooks";
+import { UserContext } from "../hooks/userContext";
+import SearchBar from "../components/SearchBar";
 
 axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_BACKEND_HOST}`;
 axios.defaults.withCredentials = true;
 
-export default function Home({ allReciplesData, appState }) {
-  const { favorites, handleAddFavorite, handleRemoveFavorite } = useFavorites();
+export default function Home({ allReciplesData }) {
+  const userContext = useContext(UserContext);
+  const { favorites, handleAddFavorite, handleRemoveFavorite } =
+    useFavorites(userContext);
+  const [recipes, setRecipes] = useState(null);
+  const [currentSearch, setCurrentSearch] = useState([]);
+
+  const onClick = async (keys) => {
+    const res = await searchRecipes(keys);
+    setRecipes(res);
+    setCurrentSearch(keys ? keys.split(",").map((s) => s.trim()) : []);
+  };
 
   return (
-    <Layout home>
+    <Layout home title="Search for Your Recipe Here">
       <Head>
         <title>{siteTitle}</title>
       </Head>
+      <SearchBar onClick={onClick} />
+      {currentSearch.length > 0 && (
+        <div
+         className="px-10, pt-2 text-gray-500"
+        >{`Currently showing search result for: ${currentSearch.join(", ")}`}</div>
+      )}
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
         <RecipeGrid
-          recipeList={allReciplesData}
+          recipeList={recipes || allReciplesData}
           favorites={favorites}
           handleAddFavorite={handleAddFavorite}
           handleRemoveFavorite={handleRemoveFavorite}
         />
       </section>
-      <div className="flex flex-col justify-between p-4 leading-normal">
-        <button className="mb-2 text-lg font-bold tracking-tight text-gray-900">
-          <Link href="/recipe/create">Create Recipe</Link>
-        </button>
-      </div>
     </Layout>
   );
 }

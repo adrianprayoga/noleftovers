@@ -96,6 +96,18 @@ export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
   }
 };
 
+export const searchRecipes = async (keys: string): Promise<any[]> => {
+  try {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/recipe?search=${keys}`);
+
+    return response.data;
+  } catch (err) {
+    console.error("error in getting recipes");
+
+    return [];
+  }
+};
+
 export const getMeasures = async (): Promise<any[]> => {
   try {
     const response = await axios.get(

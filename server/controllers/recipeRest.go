@@ -65,16 +65,35 @@ func GetCtx(next http.Handler) http.Handler {
 }
 
 func (rs RecipeResource) List(w http.ResponseWriter, r *http.Request) {
-	recipes, err := rs.Service.GetRecipes()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+
+	searchKeys := r.FormValue("search")
+	recipes := make([]models.Recipe, 0)
+
+	if searchKeys != "" {
+		keys := strings.Split(searchKeys, ",")
+		for i, k := range keys {
+			keys[i] = strings.Trim(k, " ")
+		}
+
+		r, err := rs.Service.SearchRecipes(keys)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		recipes = append(recipes, r...)
+	} else {
+		r, err := rs.Service.GetRecipes()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		recipes = append(recipes, r...)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 
 	res, _ := json.Marshal(recipes)
-	_, err = w.Write(res)
+	_, err := w.Write(res)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

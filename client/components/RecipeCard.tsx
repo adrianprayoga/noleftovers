@@ -26,12 +26,12 @@ const RecipeCard = (props: RecipeHighlight) => {
       )}
 
       <Link href={`/recipe/${props.id}`}>
-        <div className="flex  flex-1 flex-col justify-between p-4 leading-normal cursor-pointer">
+        <div className="flex  flex-1 flex-col justify-start p-4 leading-normal cursor-pointer">
           <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">
             <a>{props.name}</a>
           </h5>
-          <p className="mb-3 font-normal text-gray-700">{props.description}</p>
-          <p>
+          <p className=" mb-3 font-normal text-gray-700">{props.description}</p>
+          {/* <p>
             {`Tags: `}
             {["chicken", "burger", "pizza"].map((item, i) => {
               return (
@@ -40,7 +40,7 @@ const RecipeCard = (props: RecipeHighlight) => {
                 </Link>
               );
             })}
-          </p>
+          </p> */}
         </div>
       </Link>
 

@@ -8,7 +8,7 @@ import Nav from './Nav';
 const name = 'To change';
 export const siteTitle = 'No Leftovers';
 
-export default function Layout({ children, home }) {
+export default function Layout({ children, home, title }) {
   return (
     <>
       < Nav />
@@ -29,19 +29,7 @@ export default function Layout({ children, home }) {
           <meta name="twitter:card" content="summary_large_image" />
         </Head>
         <header className={styles.header}>
-          {home && (
-            <>
-              {/* <Image
-                priority
-                src="/images/profile.jpeg"
-                className={utilStyles.borderCircle}
-                height={144}
-                width={144}
-                alt={name}
-              /> */}
-              <h1 className={utilStyles.heading2Xl}>Find Your Favorite Recipes</h1>
-            </>
-          )}
+          <h1 className={utilStyles.heading2Xl}>{title}</h1>
         </header>
         <main>{children}</main>
         {/* {!home && (

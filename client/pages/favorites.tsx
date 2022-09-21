@@ -13,11 +13,12 @@ axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_BACKEND_HOST}`;
 axios.defaults.withCredentials = true;
 
 export default function Favorites({ allReciplesData }) {
-  const { favorites, handleAddFavorite, handleRemoveFavorite } = useFavorites();
+  
   const userContext = useContext(UserContext);
+  const { favorites, handleAddFavorite, handleRemoveFavorite } = useFavorites(userContext);
 
   return (
-    <Layout home={false}>
+    <Layout home={false} title="Here's Your Favorite!">
       <Head>
         <title>{siteTitle}</title>
       </Head>
