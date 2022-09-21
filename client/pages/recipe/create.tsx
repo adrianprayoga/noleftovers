@@ -100,7 +100,7 @@ const Create = () => {
   };
 
   return (
-    <Layout home={false}>
+    <Layout home={false} title="">
       <>
         <div>
           <div className="md:grid md:grid-cols-1 md:gap-6">
