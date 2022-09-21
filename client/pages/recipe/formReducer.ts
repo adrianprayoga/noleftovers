@@ -36,11 +36,13 @@ export const formReducer = (state, action) => {
       newState[name][position][prop] = value;
 
       const lastItem = newState[name][newState[name].length - 1];
-      if (Object.values(lastItem).find((i) => i)) {
+      const lastItemHasItem = lastItem["text"] || lastItem["name"]
+
+      if (lastItemHasItem) {
         if (name === "ingredients") {
-          newState[name] = newState[name].concat(defaultIngredient);
+          newState[name] = newState[name].concat({...defaultIngredient});
         } else if (name === "steps") {
-          newState[name] = newState[name].concat(defaultStep);
+          newState[name] = newState[name].concat({...defaultStep});
         }
       }
 
