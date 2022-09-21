@@ -90,7 +90,7 @@ const Create = () => {
 
     const response = await createRecipe(formState, file);
     if (!response.error) {
-      window.location.href = `http://localhost:3000/recipe/${response.id}`;
+      window.location.href = `/recipe/${response.id}`;
     } else {
       newValidationError["overall"] =
         "There seems to be an issue creating your recipe. Please make sure that all inputs are correct.";

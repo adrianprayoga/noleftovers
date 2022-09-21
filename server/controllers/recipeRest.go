@@ -17,7 +17,7 @@ import (
 
 type createRecipeRequest struct {
 	Name        string                    `json:"name" validate:"required"`
-	Description string                    `json:"description" validate:"required,min=1,max=400"`
+	Description string                    `json:"description" validate:"required,min=1,max=4000"`
 	Author      uint                      `json:"author"`
 	Steps       []createStepsRequest      `json:"steps" validate:"required,dive,min=1"`
 	Ingredients []createIngredientRequest `json:"ingredients" validate:"required,dive,min=1"`
