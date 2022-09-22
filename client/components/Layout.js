@@ -8,7 +8,8 @@ import Nav from './Nav';
 const name = 'To change';
 export const siteTitle = 'No Leftovers';
 
-export default function Layout({ children, home, title }) {
+export default function Layout(props) {
+  const { children, title } = props
   return (
     <>
       < Nav />
