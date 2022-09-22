@@ -24,7 +24,7 @@ export default function Favorites({ allReciplesData }) {
       </Head>
 
       {!userContext.authenticated ? (
-        <h1 className="text-xl">
+        <h1 className="text-xl flex justify-center">
           You are currently not logged in. Please login to access your favorites
           recipe
         </h1>

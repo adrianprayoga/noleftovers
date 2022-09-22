@@ -26,7 +26,7 @@ export const getAllRecipeIds = async () => {
   });
 };
 
-export const getRecipeData = async (id: string) => {
+export const getRecipeData = async (id: string | string[]) => {
   try {
     const response = await axios.get(`${process.env.HOST}/recipe/${id}`);
 

@@ -11,7 +11,7 @@ const Post = (props) => {
   const { recipeData } = props;
 
   return (
-    <Layout home={false}>
+    <Layout home={false} title="">
       <h1 className="text-4xl font-extrabold leading-6 text-gray-900 my-4">
         {recipeData.name}
       </h1>
