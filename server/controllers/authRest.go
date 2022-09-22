@@ -7,6 +7,7 @@ import (
 	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
@@ -105,8 +106,7 @@ func (rs AuthResource) HandleLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: change
-	http.Redirect(w, r, "http://localhost:3000", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, viper.GetString("client_host"), http.StatusTemporaryRedirect)
 
 }
 
@@ -158,7 +158,6 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 		response, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			logger.Log.Error("ReadAll: " + err.Error() + "\n")
-			// TODO change redirect
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 			return
 		}
@@ -193,8 +192,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		//TODO: change
-		http.Redirect(w, r, "http://localhost:3000", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, viper.GetString("client_host"), http.StatusTemporaryRedirect)
 
 		return
 	}

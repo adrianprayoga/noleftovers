@@ -31,11 +31,13 @@ export default function Home({ allReciplesData }) {
       <Head>
         <title>{siteTitle}</title>
       </Head>
-      <SearchBar onClick={onClick} />
+      <div className="mt-10">
+        <SearchBar onClick={onClick} />
+      </div>
       {currentSearch.length > 0 && (
-        <div
-         className="px-10, pt-2 text-gray-500"
-        >{`Currently showing search result for: ${currentSearch.join(", ")}`}</div>
+        <div className="px-10, pt-2 text-gray-500">{`Currently showing search result for: ${currentSearch.join(
+          ", "
+        )}`}</div>
       )}
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
         <RecipeGrid

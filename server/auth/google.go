@@ -23,10 +23,10 @@ var (
 )
 
 type GoogleCallbackResponse struct {
-	Id string `json:"id"`
-	Email string `json:"email"`
+	Id            string `json:"id"`
+	Email         string `json:"email"`
 	VerifiedEmail string `json:"verified_email"`
-	Picture string `json:"picture"`
+	Picture       string `json:"picture"`
 }
 
 /*
@@ -35,7 +35,7 @@ InitializeOAuthGoogle Function
 func InitializeOAuthGoogle() {
 	OauthConfGl.ClientID = viper.GetString("google.clientID")
 	OauthConfGl.ClientSecret = viper.GetString("google.clientSecret")
-	OauthConfGl.RedirectURL = viper.GetString("host") + ":" + viper.GetString("port") + "/auth/callback-gl"
+	OauthConfGl.RedirectURL = viper.GetString("backend_host") + "/auth/callback-gl"
 	OauthStateStringGl = viper.GetString("oauthStateString")
 }
 
