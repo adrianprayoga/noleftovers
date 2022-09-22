@@ -5,7 +5,7 @@ import { TrashIcon, ExclamationIcon } from "@heroicons/react/outline";
 import TextareaAutosize from "react-textarea-autosize";
 import { createRecipe, getMeasures } from "../../lib/recipes";
 import clsx from "clsx";
-import { ACTION_TYPES, formReducer, INITIAL_STATE } from "./formReducer";
+import { ACTION_TYPES, formReducer, INITIAL_STATE } from "../../reducer/formReducer";
 
 const Create = () => {
   const [formState, dispatch] = useReducer(formReducer, INITIAL_STATE);
