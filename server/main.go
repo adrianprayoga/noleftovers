@@ -6,6 +6,7 @@ import (
 	"github.com/adrianprayoga/noleftovers/server/internals/configs"
 	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 
 	//"github.com/adrianprayoga/noleftovers/server/configs"
 	"github.com/adrianprayoga/noleftovers/server/controllers"
@@ -37,6 +38,8 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	logger.Log.Debug("db cfg", zap.Any("cfg", cfg))
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{viper.GetString("client_host")},
