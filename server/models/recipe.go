@@ -143,7 +143,7 @@ func (service *RecipeService) GetRecipes() ([]Recipe, error) {
 
 	rows, err := service.DB.Query(`SELECT id, name, description, author, image_link FROM recipes`)
 	if err != nil {
-		fmt.Println("Error getting recipe list")
+		logger.Log.Error("Error getting recipe list", zap.Error(err))
 		return nil, fmt.Errorf("error getting recipe list: %w", err)
 	}
 	defer rows.Close()
