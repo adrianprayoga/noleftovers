@@ -39,8 +39,6 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	logger.Log.Debug("db cfg", zap.Any("cfg", cfg))
-
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{viper.GetString("client_host")},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -84,5 +82,6 @@ func main() {
 	r.Mount("/favorites", favoritesResource.Routes())
 
 	fmt.Println("Starting the server on :" + viper.GetString("port"))
+	logger.Log.Info("db cfg", zap.Any("cfg", cfg))
 	http.ListenAndServe(":"+viper.GetString("port"), r)
 }
