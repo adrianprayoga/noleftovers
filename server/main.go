@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/adrianprayoga/noleftovers/server/auth"
 	"github.com/adrianprayoga/noleftovers/server/internals/configs"
