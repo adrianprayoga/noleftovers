@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/adrianprayoga/noleftovers/server/auth"
 	"github.com/adrianprayoga/noleftovers/server/internals/configs"
@@ -35,6 +36,13 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Log.Info("Connected to database db cfg", zap.Any("cfg", cfg))
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -82,6 +90,5 @@ func main() {
 	r.Mount("/favorites", favoritesResource.Routes())
 
 	fmt.Println("Starting the server on :" + viper.GetString("port"))
-	logger.Log.Info("db cfg", zap.Any("cfg", cfg))
 	http.ListenAndServe(":"+viper.GetString("port"), r)
 }
