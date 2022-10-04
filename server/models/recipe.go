@@ -141,7 +141,7 @@ func batchInsert(tx *sql.Tx, sqlString string, numArguments int, numEntry int, a
 
 func (service *RecipeService) GetRecipes() ([]Recipe, error) {
 
-	rows, err := service.DB.Query(`SELECT id, name, description, author, image_link FROM recipes`)
+	rows, err := service.DB.Query(`SELECT id, name, description, author, image_link FROM RECIPES`)
 	if err != nil {
 		logger.Log.Error("Error getting recipe list", zap.Error(err))
 		return nil, fmt.Errorf("error getting recipe list: %w", err)
