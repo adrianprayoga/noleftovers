@@ -82,11 +82,11 @@ func main() {
 		DB: db,
 	}
 
-	r.Mount("api/recipe", recipeResource.Routes())
-	r.Mount("api/measures", measureResource.Routes())
-	r.Mount("api/images", imageResource.Routes())
-	r.Mount("api/auth", authResource.Routes())
-	r.Mount("api/favorites", favoritesResource.Routes())
+	r.Mount("/api/recipe", recipeResource.Routes())
+	r.Mount("/api/measures", measureResource.Routes())
+	r.Mount("/api/images", imageResource.Routes())
+	r.Mount("/api/auth", authResource.Routes())
+	r.Mount("/api/favorites", favoritesResource.Routes())
 
 	fmt.Println("Starting the server on :" + viper.GetString("port"))
 	http.ListenAndServe(":"+viper.GetString("port"), r)
