@@ -1,8 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
+	"github.com/spf13/viper"
+	"io/ioutil"
+	"log"
+	"net/http"
 )
 
 type ImageResource struct {
@@ -11,9 +16,35 @@ type ImageResource struct {
 
 func (rs ImageResource) Routes() chi.Router {
 	r := chi.NewRouter()
-	//r.Post("/", rs.Upload) // GET /posts - Read a list of measure.
+
+	r.Route("/{id}", func(r chi.Router) {
+		r.Use(GetCtx)      // Use the same middleware
+		r.Get("/", rs.Get) // GET /posts/{id} - Read a single post by :id.
+	})
 
 	return r
+}
+
+func (rs ImageResource) Get(w http.ResponseWriter, r *http.Request) {
+	filename, ok := r.Context().Value("id").(string)
+	if !ok {
+		http.Error(w, "invalid filename", http.StatusBadRequest)
+	}
+
+	basePath := viper.GetString("imageLocation")
+
+
+	fmt.Println("filename", fmt.Sprintf("%s/%s", basePath, filename))
+	buf, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", basePath, filename))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "image/*")
+	w.Write(buf)
+
+	w.WriteHeader(http.StatusOK)
 }
 
 //func (rs ImageResource) Upload(w http.ResponseWriter, r *http.Request) {

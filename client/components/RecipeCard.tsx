@@ -12,7 +12,7 @@ interface RecipeHighlight {
   handleRemoveFavorite: (params: number) => number;
 }
 
-const basePath = "/images/recipe";
+const basePath = "http://localhost:7171/api/images";
 
 const RecipeCard = (props: RecipeHighlight) => {
   return (
@@ -20,7 +20,7 @@ const RecipeCard = (props: RecipeHighlight) => {
       {props.imageLink && (
         <img
           className="h-96 rounded-t-lg md:h-auto md:w-48 md:rounded-none md:rounded-l-lg"
-          src={`${basePath}/${props.imageLink}`}
+          src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
           alt=""
         />
       )}
