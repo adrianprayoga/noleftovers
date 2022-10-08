@@ -51,7 +51,7 @@ export default function Home({ allReciplesData }) {
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const allReciplesData = await getAllRecipes();
 
   return {
