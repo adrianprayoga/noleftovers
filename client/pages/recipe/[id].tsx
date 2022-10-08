@@ -5,8 +5,6 @@ import { getAllRecipeIds, getRecipeData } from "../../lib/recipes";
 import utilStyles from "../../styles/utils.module.css";
 import path from "path";
 
-const basePath = "/images/recipe";
-
 const Post = (props) => {
   const { recipeData } = props;
 
@@ -18,7 +16,7 @@ const Post = (props) => {
       {recipeData.imageLink && (
         <img
           className="h-96 rounded-lg md:h-auto md:w-48 mt-10"
-          src={`${basePath}/${recipeData.imageLink}`}
+          src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${recipeData.imageLink}`}
           alt=""
         />
       )}
