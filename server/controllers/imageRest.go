@@ -6,7 +6,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/viper"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -33,12 +32,12 @@ func (rs ImageResource) Get(w http.ResponseWriter, r *http.Request) {
 
 	basePath := viper.GetString("imageLocation")
 
-
 	fmt.Println("filename", fmt.Sprintf("%s/%s", basePath, filename))
 	buf, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", basePath, filename))
 
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	w.Header().Set("Content-Type", "image/*")
