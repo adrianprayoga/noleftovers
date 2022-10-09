@@ -9,6 +9,7 @@ import (
 	"github.com/adrianprayoga/noleftovers/server/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
@@ -58,6 +59,8 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	logger.Log.Info("Session info handle success", zap.Any("val", session.Values))
 
 	val, ok := session.Values["authenticated"].(bool)
 	fmt.Println("auth value", val, ok)
@@ -194,6 +197,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 			return
 		}
 
+		logger.Log.Info("Session info", zap.Any("val", session.Values))
 		http.Redirect(w, r, viper.GetString("client_host"), http.StatusTemporaryRedirect)
 
 		return
