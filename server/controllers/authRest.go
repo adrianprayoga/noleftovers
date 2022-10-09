@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/adrianprayoga/noleftovers/server/auth"
 	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
 	"github.com/adrianprayoga/noleftovers/server/models"
@@ -58,8 +59,9 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := session.Values["authenticated"].(bool); ok {
-
+	val, ok := session.Values["authenticated"].(bool)
+	fmt.Println("auth value", val, ok)
+	if ok && val {
 		logger.Log.Info("user is successfully authenticated via handleSuccess")
 
 		w.Header().Set("Content-Type", "application/json")

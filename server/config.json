@@ -1,5 +1,5 @@
 {
-  "backend_host": "http://localhost:7171",
+  "backend_host": "http://localhost:7171/api",
   "port": "7171",
   "imageLocation": "/Users/apr/noleftovers/client/public/images/recipe",
   "oauthStateString": null,
