@@ -12,8 +12,6 @@ interface RecipeHighlight {
   handleRemoveFavorite: (params: number) => number;
 }
 
-const basePath = "http://localhost:7171/api/images";
-
 const RecipeCard = (props: RecipeHighlight) => {
   return (
     <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
