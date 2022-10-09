@@ -60,7 +60,7 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Log.Info("Session info handle success", zap.Any("val", session.Values))
+	logger.Log.Info("Session info handle success", zap.Any("val", session.Values["authenticated"]))
 
 	val, ok := session.Values["authenticated"].(bool)
 	fmt.Println("auth value", val, ok)
@@ -197,7 +197,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		logger.Log.Info("Session info", zap.Any("val", session.Values))
+		logger.Log.Info("Session info", zap.Any("val", session.Values["authenticated"]))
 		http.Redirect(w, r, viper.GetString("client_host"), http.StatusTemporaryRedirect)
 
 		return
