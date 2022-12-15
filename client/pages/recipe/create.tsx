@@ -1,11 +1,15 @@
 import { useState, useCallback, useEffect, useReducer } from "react";
 import Layout from "../../components/Layout";
 import Alert from "../../components/Alert";
-import { TrashIcon, ExclamationIcon } from "@heroicons/react/outline";
+import { TrashIcon, ExclamationIcon, PlusIcon } from "@heroicons/react/outline";
 import TextareaAutosize from "react-textarea-autosize";
 import { createRecipe, getMeasures } from "../../lib/recipes";
 import clsx from "clsx";
-import { ACTION_TYPES, formReducer, INITIAL_STATE } from "../../reducer/formReducer";
+import {
+  ACTION_TYPES,
+  formReducer,
+  INITIAL_STATE,
+} from "../../reducer/formReducer";
 
 const Create = () => {
   const [formState, dispatch] = useReducer(formReducer, INITIAL_STATE);
@@ -50,6 +54,15 @@ const Create = () => {
         position: position,
         prop: event.target.name,
         value: event.target.value,
+      },
+    });
+  };
+
+  const handleListAdd = (name: string) => (event) => {
+    dispatch({
+      type: ACTION_TYPES.ADD_TO_LIST,
+      payload: {
+        name: name,
       },
     });
   };
@@ -225,13 +238,13 @@ const Create = () => {
                       {(formState["ingredients"] || []).map((item, i) => {
                         return (
                           <div className="mt-1 flex" key={i}>
-                            <div className="mt-1 flex rounded-md shadow-sm w-full">
-                              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                            <div className="mt-1 flex rounded-md w-full">
+                              <span className="shadow-sm inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                                 {i + 1}
                               </span>
                               <input
                                 type="text"
-                                className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-r-md sm:text-sm border-gray-300"
+                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-r-md sm:text-sm border-gray-300"
                                 value={formState["ingredients"][i]["name"]}
                                 name="name"
                                 onChange={handleListChange("ingredients", i)}
@@ -242,7 +255,7 @@ const Create = () => {
                               </span>
                               <input
                                 type="text"
-                                className="focus:ring-indigo-500 focus:border-indigo-500 block w-1/4 rounded-md sm:text-sm border-gray-300"
+                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-1/4 rounded-md sm:text-sm border-gray-300"
                                 placeholder="0"
                                 value={formState["ingredients"][i]["amount"]}
                                 name="amount"
@@ -266,19 +279,28 @@ const Create = () => {
                                 ))}
                             </select>
 
-                            {formState["ingredients"]?.length > 1 && (
-                              <button
-                                type="button"
-                                className="col-span-1 p-2"
-                                name="test"
-                                onClick={handleItemDeletion("ingredients", i)}
-                              >
-                                <TrashIcon className="h-6 w-6 text-gray-300" />
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              className="col-span-1 p-2"
+                              name="test"
+                              onClick={handleItemDeletion("ingredients", i)}
+                            >
+                              <TrashIcon className="h-6 w-6 text-gray-300" />
+                            </button>
                           </div>
                         );
                       })}
+                      <button
+                        type="button"
+                        className="col-span-1 p-2 m-1 mt-3"
+                        name="test"
+                        onClick={handleListAdd("ingredients")}
+                      >
+                        <div className="flex justify-center">
+                          <PlusIcon className="h-5 w-5 text-indigo-400" />
+                          <div className="text-sm ml-1 text-indigo-400">Add New Ingredient</div>
+                        </div>
+                      </button>
                       <Error error={validationError["ingredients"]} />
                     </div>
 
@@ -301,19 +323,28 @@ const Create = () => {
                               />
                             </div>
 
-                            {formState["steps"]?.length > 1 && (
-                              <button
-                                name="steps"
-                                type="button"
-                                className="col-span-1 p-2"
-                                onClick={handleItemDeletion("steps", i)}
-                              >
-                                <TrashIcon className="h-6 w-6 text-gray-300" />
-                              </button>
-                            )}
+                            <button
+                              name="steps"
+                              type="button"
+                              className="col-span-1 p-2"
+                              onClick={handleItemDeletion("steps", i)}
+                            >
+                              <TrashIcon className="h-6 w-6 text-gray-300" />
+                            </button>
                           </div>
                         );
                       })}
+                      <button
+                        type="button"
+                        className="col-span-1 p-2 m-1 mt-3"
+                        name="test"
+                        onClick={handleListAdd("steps")}
+                      >
+                        <div className="flex justify-center">
+                          <PlusIcon className="h-5 w-5 text-indigo-400" />
+                          <div className="text-sm ml-1 text-indigo-400">Add New Steps</div>
+                        </div>
+                      </button>
                       <Error error={validationError["steps"]} />
                     </div>
                   </div>

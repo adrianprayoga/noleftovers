@@ -8,6 +8,7 @@ interface RecipeHighlight {
   description: string;
   imageLink: string;
   isFavorite: boolean;
+  isDisabled: boolean;
   handleAddFavorite: (params: number) => number;
   handleRemoveFavorite: (params: number) => number;
 }
@@ -28,17 +29,11 @@ const RecipeCard = (props: RecipeHighlight) => {
           <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">
             <a>{props.name}</a>
           </h5>
-          <p className=" mb-3 font-normal text-gray-700">{props.description}</p>
-          {/* <p>
-            {`Tags: `}
-            {["chicken", "burger", "pizza"].map((item, i) => {
-              return (
-                <Link href={`/${item}`} key={i}>
-                  <a>{item + ", "}</a>
-                </Link>
-              );
-            })}
-          </p> */}
+          <p className=" mb-3 font-normal text-gray-700 text-base">
+            {props.description?.length > 250
+              ? props.description.substring(0, 250) + "..."
+              : props.description}
+          </p>
         </div>
       </Link>
 
@@ -57,7 +52,9 @@ const RecipeCard = (props: RecipeHighlight) => {
           strokeWidth={1.5}
           stroke="currentColor"
           className={clsx(
-            "w-6 h-6 hover:fill-blue-400",
+            "w-6 h-6",
+            props.isDisabled && "stroke-gray-300",
+            !props.isDisabled && "hover:fill-blue-400",
             props.isFavorite && "fill-blue-400"
           )}
         >

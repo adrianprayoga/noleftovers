@@ -13,6 +13,7 @@ import (
 type User struct {
 	Id    uint `json:"id"`
 	Email string `json:"email"`
+	FullName string `json:"full_name"`
 	PasswordHash string `json:"password_hash"`
 	AuthMethod string `json:"auth_method"`
 	OauthId string `json:"oauth_id"`
@@ -35,7 +36,7 @@ type UserService struct {
 type UserValidator struct {
 }
 
-func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, error) {
+func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, bool, error) {
 	email := strings.ToLower(nu.Email)
 
 	user := User{
@@ -46,7 +47,7 @@ func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, error) {
 	}
 
 	exists := true
-	err := us.DB.QueryRow(`SELECT id FROM users WHERE email=$1`, user.Email).Scan(&user.Id)
+	err := us.DB.QueryRow(`SELECT id, full_name FROM users WHERE email=$1`, user.Email).Scan(&user.Id, &user.FullName)
 
 	if err != nil && err != sql.ErrNoRows {
 		logger.Log.Error("Error checking whether user exists")
@@ -60,7 +61,7 @@ func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, error) {
 		_, err = us.DB.Exec(`UPDATE users SET last_login = $1 WHERE email=$2`, time.Now(), &user.Email)
 		if err != nil {
 			logger.Log.Error("Error when updating user", zap.Error(err))
-			return nil, fmt.Errorf("update user: %w", err)
+			return nil, false, fmt.Errorf("update user: %w", err)
 		}
 	} else {
 		logger.Log.Info("creating user")
@@ -70,8 +71,34 @@ func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, error) {
 		err = row.Scan(&user.Id)
 		if err != nil {
 			logger.Log.Error("Error when creating user", zap.Error(err))
-			return nil, fmt.Errorf("create user: %w", err)
+			return nil, false, fmt.Errorf("create user: %w", err)
 		}
+	}
+
+	return &user, !exists, nil
+}
+
+func (us *UserService) UpdateUserDetails(user User) (*User, error) {
+
+	exists := true
+	err := us.DB.QueryRow(`SELECT id FROM users WHERE id=$1`, user.Id).Scan(&user.Id)
+
+	if err != nil && err != sql.ErrNoRows {
+		logger.Log.Error("Error checking whether user exists")
+		logger.Log.Error("", zap.Error(err))
+	} else if err != nil && err == sql.ErrNoRows {
+		exists = false
+	}
+
+	if exists {
+		logger.Log.Info("updating user details")
+		_, err = us.DB.Exec(`UPDATE users SET full_name = $1 WHERE id=$2`, &user.FullName, &user.Id)
+		if err != nil {
+			logger.Log.Error("Error when updating user details", zap.Error(err))
+			return nil, fmt.Errorf("update user: %w", err)
+		}
+	} else {
+		logger.Log.Error("user does not exist")
 	}
 
 	return &user, nil
