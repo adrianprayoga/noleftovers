@@ -5,12 +5,8 @@ import { getAllRecipes, getFavorites } from "../lib/recipes";
 import RecipeGrid from "../components/RecipeGrid";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import useFavorites from "../hooks/favorites-hooks";
 import { UserContext } from "../hooks/userContext";
-
-axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_BACKEND_HOST}`;
-axios.defaults.withCredentials = true;
 
 export default function Favorites({ allReciplesData }) {
   

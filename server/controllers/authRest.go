@@ -60,7 +60,8 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Log.Info("Session info handle success", zap.Any("val", session.Values["authenticated"]))
+	logger.Log.Info("Session info handle success", zap.Any("val", session.ID))
+	logger.Log.Info("Session info handle success", zap.Any("val", session.Name()))
 
 	val, ok := session.Values["authenticated"].(bool)
 	fmt.Println("auth value", val, ok)
@@ -73,6 +74,7 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 			Message: "user has successfully authenticated",
 			User: models.User{
 				Email: session.Values["email"].(string),
+				FullName: session.Values["fullName"].(string),
 			},
 		})
 		_, err := w.Write(res)
@@ -181,7 +183,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 		}
 
 		logger.Log.Info("Creating / updating user based on oauth input")
-		user, err := rs.Service.CreateOrUpdateByOauth(newUser)
+		user, isNewUser, err := rs.Service.CreateOrUpdateByOauth(newUser)
 
 		session, _ := auth.Store.Get(r, "session-name")
 		// Set some session values.
@@ -190,6 +192,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 		session.Values["email"] = newUser.Email
 		session.Values["picture"] = newUser.Picture
 		session.Values["id"] = user.Id
+		session.Values["fullName"] = user.FullName
 
 		err = session.Save(r, w)
 		if err != nil {
@@ -197,8 +200,15 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		logger.Log.Info("Session info", zap.Any("val", session.Values["authenticated"]))
-		http.Redirect(w, r, viper.GetString("client_host"), http.StatusTemporaryRedirect)
+		logger.Log.Debug("Session info", zap.Any("val", session.Values["authenticated"]))
+		logger.Log.Info("Is New User", zap.Bool("isNewUser", isNewUser))
+
+		if isNewUser {
+			http.Redirect(w, r, viper.GetString("client_host")+"/user/edit", http.StatusTemporaryRedirect)
+		} else {
+			http.Redirect(w, r, viper.GetString("client_host"), http.StatusTemporaryRedirect)
+		}
+
 
 		return
 	}

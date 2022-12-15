@@ -1,7 +1,7 @@
 import RecipeCard from "./RecipeCard";
 
 const RecipeGrid = (props) => {
-  const { recipeList, favorites, handleAddFavorite, handleRemoveFavorite} = props;
+  const { recipeList, favorites, handleAddFavorite, handleRemoveFavorite, userAuthenticated } = props;
 
   return (
     <>
@@ -10,6 +10,7 @@ const RecipeGrid = (props) => {
           <RecipeCard
             key={i}
             isFavorite={favorites.indexOf(recipe.id) !== -1}
+            isDisabled={!userAuthenticated}
             handleAddFavorite={handleAddFavorite}
             handleRemoveFavorite={handleRemoveFavorite}
             {...recipe}

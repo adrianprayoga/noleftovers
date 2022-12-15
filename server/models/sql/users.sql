@@ -1,6 +1,7 @@
 CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
                        email TEXT UNIQUE NOT NULL,
+                       full_name TEXT,
                        password_hash TEXT,
                        auth_method TEXT NOT NULL,
                        oauth_id TEXT NOT NULL,

@@ -5,13 +5,9 @@ import { getAllRecipes, searchRecipes } from "../lib/recipes";
 import RecipeGrid from "../components/RecipeGrid";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import useFavorites from "../hooks/favorites-hooks";
 import { UserContext } from "../hooks/userContext";
 import SearchBar from "../components/SearchBar";
-
-axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_BACKEND_HOST}`;
-axios.defaults.withCredentials = true;
 
 export default function Home({ allReciplesData }) {
   const userContext = useContext(UserContext);
@@ -45,6 +41,7 @@ export default function Home({ allReciplesData }) {
           favorites={favorites}
           handleAddFavorite={handleAddFavorite}
           handleRemoveFavorite={handleRemoveFavorite}
+          userAuthenticated={userContext.authenticated}
         />
       </section>
     </Layout>

@@ -12,6 +12,7 @@ export const ACTION_TYPES = {
   UPDATE_TEXT: "UPDATE_TEXT",
   DELETE_ITEM: "DELETE_ITEM",
   LIST_UPDATE: "LIST_UPDATE",
+  ADD_TO_LIST: "ADD_TO_LIST",
 };
 
 export const formReducer = (state, action) => {
@@ -31,22 +32,17 @@ export const formReducer = (state, action) => {
       };
     case ACTION_TYPES.LIST_UPDATE:
       const { name, position, value, prop } = action.payload;
-
       let newState = { ...state };
       newState[name][position][prop] = value;
-
-      const lastItem = newState[name][newState[name].length - 1];
-      const lastItemHasItem = lastItem["text"] || lastItem["name"]
-
-      if (lastItemHasItem) {
-        if (name === "ingredients") {
-          newState[name] = newState[name].concat({...defaultIngredient});
-        } else if (name === "steps") {
-          newState[name] = newState[name].concat({...defaultStep});
-        }
-      }
-
       return newState;
+    case ACTION_TYPES.ADD_TO_LIST:
+      const def =
+        action.payload.name === "ingredients" ? defaultIngredient : defaultStep;
+
+      return {
+        ...state,
+        [action.payload.name]: [...state[action.payload.name], { ...def }],
+      };
     default:
       return state;
   }
