@@ -6,7 +6,7 @@ import axios from "axios";
 
 function App({ Component, pageProps }: AppProps) {
   const [appState, setAppState] = useState({
-    user: {},
+    user: null,
     error: null,
     authenticated: false,
   });
