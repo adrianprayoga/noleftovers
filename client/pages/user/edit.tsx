@@ -45,6 +45,11 @@ const Edit = () => {
       newValidationError["name"] = "this field is required";
     }
 
+    if (Object.keys(newValidationError).length > 0) {
+      setValidationError(newValidationError);
+      return;
+    }
+
     const response = await updateUser(formState["name"]);
     if (!response.error) {
       setSuccessMessage(true);
