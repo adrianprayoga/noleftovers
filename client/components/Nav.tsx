@@ -89,7 +89,11 @@ const Nav = () => {
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 {userContext.authenticated && (
                   <>
-                    <div className="px-3 py-2 rounded-md text-sm font-medium text-gray-300">{`Hi ${userContext.user["email"]}`}</div>
+                    <div className="px-3 py-2 rounded-md text-sm font-medium text-gray-300">{`Hi ${
+                      userContext.user["full_name"]
+                        ? userContext.user["full_name"]
+                        : userContext.user["email"]
+                    }`}</div>
                     <button
                       type="button"
                       className="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
