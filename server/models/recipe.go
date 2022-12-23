@@ -168,20 +168,25 @@ func (service *RecipeService) SearchRecipes(keys []string) ([]Recipe, error) {
 		return make([]Recipe, 0), nil
 	}
 
+	searchColumns := []string{"recipes.name", "recipes.description", "ingredients.name"}
 	searchQuery := `SELECT DISTINCT recipes.id FROM recipes LEFT JOIN ingredients ON recipes.id = ingredients.recipe_id`
 
 	searchCriterias := make([]string, 0)
-	searchTerms := make([]any, len(keys)*2)
+	searchTerms := make([]any, len(keys) * len(searchColumns))
+
 	count := 1
 	for _, k := range keys {
-		for _, col := range []string{"recipes.description", "ingredients.name"} {
-			searchCriterias = append(searchCriterias, fmt.Sprintf(`LOWER(%s) LIKE '%%' || $%d || '%%' `, col, count))
+		orCriteria := make([]string, 0)
+		for _, col := range searchColumns {
+			orCriteria = append(orCriteria, fmt.Sprintf(`LOWER(%s) LIKE '%%' || $%d || '%%' `, col, count))
 			searchTerms[count-1] = k
 			count++
 		}
+
+		searchCriterias = append(searchCriterias, fmt.Sprintf(`(%s)`, strings.Join(orCriteria, " OR ")))
 	}
 
-	searchQuery = fmt.Sprintf("%s WHERE %s", searchQuery, strings.Join(searchCriterias, " OR "))
+	searchQuery = fmt.Sprintf("%s WHERE %s", searchQuery, strings.Join(searchCriterias, " AND "))
 
 	// first we search for the ids of the recipe which contains the search criteria
 	var recipeIds []int
