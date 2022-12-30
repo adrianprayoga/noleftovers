@@ -7,8 +7,6 @@ import { UserCircleIcon } from "@heroicons/react/outline";
 const Post = (props) => {
   const { recipeData } = props;
 
-  console.log(recipeData)
-
   return (
     <Layout home={false} title="">
       <h1 className="text-4xl font-extrabold leading-6 text-gray-900 my-4">
