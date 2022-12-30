@@ -1,0 +1,19 @@
+{
+  "backend_host": "http://localhost:7171/api",
+  "port": "7171",
+  "imageLocation": "/Users/apr/noleftovers/client/public/images/recipe",
+  "oauthStateString": null,
+  "google": {
+    "clientID": "458172078196-63r0uv43kt4a0rvg1rge3i2gp2nfqv11.apps.googleusercontent.com",
+    "clientSecret": "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"
+  },
+  "client_host": "http://localhost:3000",
+  "postgres": {
+    "host": "localhost",
+    "port": "5432",
+    "user": "postgres",
+    "password": "noleftovers",
+    "database": "noleftovers",
+    "sslMode": "disable"
+  }
+}
