@@ -1,26 +1,56 @@
 import { useState, useCallback, useEffect, useReducer } from "react";
 import Layout from "../../components/Layout";
-import Alert from "../../components/Alert";
+import Alert from "../../components/AlertBox/Alert";
 import { TrashIcon, ExclamationIcon, PlusIcon } from "@heroicons/react/outline";
 import TextareaAutosize from "react-textarea-autosize";
 import { createRecipe, getMeasures } from "../../lib/recipes";
 import clsx from "clsx";
+import ReactCrop, { Crop, PercentCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import {
   ACTION_TYPES,
   formReducer,
   INITIAL_STATE,
 } from "../../reducer/formReducer";
+import Warning from "../../components/AlertBox/Warning";
+import { cropImage, dataURLtoFile, Rectangle } from "../../lib/images";
 
 const Create = () => {
   const [formState, dispatch] = useReducer(formReducer, INITIAL_STATE);
   const [measures, setMeasures] = useState([]);
-  const [file, setFile] = useState("");
+  const [file, setFile] = useState<File>(null);
   const [image, setImage] = useState("");
+  const [imageSize, setImageSize] = useState(new Rectangle(0, 0));
   const [validationError, setValidationError] = useState({});
+  const [crop, setCrop] = useState<PercentCrop>();
 
   function handleFileUpload(e) {
-    setFile(e.target.files[0]);
-    setImage(URL.createObjectURL(e.target.files[0]));
+    try {
+      setFile(e.target.files[0]);
+
+      const imageUrl = URL.createObjectURL(e.target.files[0]);
+      setImage(imageUrl);
+  
+      let img = new Image();
+      img.src = imageUrl;
+      img.onload = () => {
+        setImageSize(new Rectangle(img.naturalWidth, img.naturalHeight));
+      };
+    } catch (e) {
+      console.warn(e)
+    }
+  }
+
+  function saveCropImage() {
+    const { canvas, w, h } = cropImage(crop, image);
+
+    const dataUrl = canvas.toDataURL(file.type, 1)
+    
+    setImage(dataUrl);
+    setFile(dataURLtoFile(dataUrl, "cropped"))
+    setImageSize(new Rectangle(w, h));
+
+    setCrop(undefined);
   }
 
   useEffect(() => {
@@ -86,6 +116,10 @@ const Create = () => {
 
     if (!file) {
       newValidationError["image"] = "please upload one image";
+    }
+
+    if (!imageSize.isRectangle) {
+      newValidationError["image"] = "please crop your image to the correct aspect ratio";
     }
 
     if (formState.ingredients?.filter((e) => e.name).length === 0) {
@@ -179,55 +213,88 @@ const Create = () => {
                       <InputLabel label="Picture" />
                       <div
                         className={clsx(
-                          "mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md",
+                          "mt-1 flex flex-col justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md",
                           validationError["image"] && "border-red-500"
                         )}
                       >
-                        <div className="space-y-1 text-center">
-                          {file ? (
-                            <img
-                              src={image}
-                              width="100px"
-                              height="100px"
-                              alt="selected image..."
-                              className="mx-auto"
-                            />
-                          ) : (
-                            <svg
-                              className="mx-auto h-12 w-12 text-gray-400"
-                              stroke="currentColor"
-                              fill="none"
-                              viewBox="0 0 48 48"
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                strokeWidth={2}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          )}
+                        <div>
+                          <div className="space-y-1 text-center pb-3">
+                            {!file && (
+                              <svg
+                                className="mx-auto h-12 w-12 text-gray-400"
+                                stroke="currentColor"
+                                fill="none"
+                                viewBox="0 0 48 48"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                  strokeWidth={2}
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
 
-                          <div className="text-sm text-gray-600">
-                            <label
-                              htmlFor="file-upload"
-                              className=" cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                            >
-                              <span>Upload your image</span>
-                              <input
-                                id="file-upload"
-                                name="file-upload"
-                                type="file"
-                                className="sr-only"
-                                accept="image/x-png,image/jpg,image/jpeg"
-                                onChange={handleFileUpload}
-                              />
-                            </label>
+                            <div className="text-sm text-gray-600">
+                              <label
+                                htmlFor="file-upload"
+                                className=" cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                              >
+                                <span>{`${
+                                  !file ? "Upload" : "Replace"
+                                } your image`}</span>
+                                <input
+                                  id="file-upload"
+                                  name="file-upload"
+                                  type="file"
+                                  className="sr-only"
+                                  accept="image/x-png,image/jpg,image/jpeg"
+                                  onChange={handleFileUpload}
+                                />
+                              </label>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              PNG or JPG up to 10MB
+                            </p>
                           </div>
-                          <p className="text-xs text-gray-500">
-                            PNG or JPG up to 10MB
-                          </p>
+                        </div>
+                        <div>
+                          {image && (
+                            <div className="flex flex-col">
+                              {!imageSize.isRectangle && (
+                                <Warning
+                                  mainMessage={""}
+                                  subMessage={
+                                    "Please use the resizing tool to crop your image into a square"
+                                  }
+                                  onClick={undefined}
+                                />
+                              )}
+
+                              <div className="flex justify-center">
+                                <button
+                                  className="px-4 py-2 mb-2 rounded bg-indigo-100 text-indigo-600 hover:text-indigo-500 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 flex-auto text-sm font-medium"
+                                  type="button"
+                                  onClick={saveCropImage}
+                                >
+                                  Crop Image
+                                </button>
+                              </div>
+                              <ReactCrop
+                                crop={crop}
+                                onChange={(_, c) => setCrop(c)}
+                                aspect={1}
+                                className="justify-center"
+                              >
+                                <img
+                                  src={image}
+                                  alt="uploaded image"
+                                  className="w-full"
+                                />
+                              </ReactCrop>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <Error error={validationError["image"]} />
@@ -298,7 +365,9 @@ const Create = () => {
                       >
                         <div className="flex justify-center">
                           <PlusIcon className="h-5 w-5 text-indigo-400" />
-                          <div className="text-sm ml-1 text-indigo-400">Add New Ingredient</div>
+                          <div className="text-sm ml-1 text-indigo-400">
+                            Add New Ingredient
+                          </div>
                         </div>
                       </button>
                       <Error error={validationError["ingredients"]} />
@@ -342,7 +411,9 @@ const Create = () => {
                       >
                         <div className="flex justify-center">
                           <PlusIcon className="h-5 w-5 text-indigo-400" />
-                          <div className="text-sm ml-1 text-indigo-400">Add New Steps</div>
+                          <div className="text-sm ml-1 text-indigo-400">
+                            Add New Steps
+                          </div>
                         </div>
                       </button>
                       <Error error={validationError["steps"]} />
@@ -389,3 +460,4 @@ const Error = (props) => {
     )
   );
 };
+
