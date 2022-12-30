@@ -1,11 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import clsx from "clsx";
+import { UserCircleIcon } from "@heroicons/react/outline";
+
+interface NullString {
+  String: string;
+  Valid: boolean;
+}
 
 interface RecipeHighlight {
   id: string;
   name: string;
   description: string;
+  author_name: NullString;
   imageLink: string;
   isFavorite: boolean;
   isDisabled: boolean;
@@ -16,10 +23,10 @@ interface RecipeHighlight {
 const RecipeCard = (props: RecipeHighlight) => {
   return (
     // <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
-    <div className="flex flex-row align-top bg-white rounded-lg border shadow-md hover:bg-gray-100 min-w-fit">
+    <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
       {props.imageLink && (
         <img
-          className="rounded-t-lg h-60 w-60 md:rounded-none md:rounded-l-lg"
+          className="hidden md:block rounded-t-lg md:h-auto md:w-48 md:rounded-none md:rounded-l-lg"
           src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
           alt=""
         />
@@ -31,10 +38,26 @@ const RecipeCard = (props: RecipeHighlight) => {
             <a>{props.name}</a>
           </h5>
           <p className=" mb-3 font-normal text-gray-700 text-base">
+            {props.imageLink && (
+              <img
+                className="md:hidden h-36 w-36 rounded-lg float-left my-2 mr-4"
+                src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
+                alt=""
+              />
+            )}
             {props.description?.length > 250
               ? props.description.substring(0, 250) + "..."
               : props.description}
           </p>
+
+          <div className="flex text-gray-500">
+            <UserCircleIcon className="h-5 w-5" />
+            <div className="mx-2 text-sm">
+              {`Author: ${
+                props.author_name?.Valid ? props.author_name.String : "Unknown"
+              }`}
+            </div>
+          </div>
         </div>
       </Link>
 

@@ -1,4 +1,10 @@
-import { useState, useCallback, useEffect, useReducer } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useReducer,
+  useContext,
+} from "react";
 import Layout from "../../components/Layout";
 import Alert from "../../components/AlertBox/Alert";
 import { TrashIcon, ExclamationIcon, PlusIcon } from "@heroicons/react/outline";
@@ -14,8 +20,13 @@ import {
 } from "../../reducer/formReducer";
 import Warning from "../../components/AlertBox/Warning";
 import { cropImage, dataURLtoFile, Rectangle } from "../../lib/images";
+import { UserContext } from "../../hooks/userContext";
 
 const Create = () => {
+  const userContext = useContext(UserContext);
+
+  console.log(userContext);
+
   const [formState, dispatch] = useReducer(formReducer, INITIAL_STATE);
   const [measures, setMeasures] = useState([]);
   const [file, setFile] = useState<File>(null);
@@ -30,24 +41,24 @@ const Create = () => {
 
       const imageUrl = URL.createObjectURL(e.target.files[0]);
       setImage(imageUrl);
-  
+
       let img = new Image();
       img.src = imageUrl;
       img.onload = () => {
         setImageSize(new Rectangle(img.naturalWidth, img.naturalHeight));
       };
     } catch (e) {
-      console.warn(e)
+      console.warn(e);
     }
   }
 
   function saveCropImage() {
     const { canvas, w, h } = cropImage(crop, image);
 
-    const dataUrl = canvas.toDataURL(file.type, 1)
-    
+    const dataUrl = canvas.toDataURL(file.type, 1);
+
     setImage(dataUrl);
-    setFile(dataURLtoFile(dataUrl, "cropped"))
+    setFile(dataURLtoFile(dataUrl, "cropped"));
     setImageSize(new Rectangle(w, h));
 
     setCrop(undefined);
@@ -119,7 +130,8 @@ const Create = () => {
     }
 
     if (!imageSize.isRectangle) {
-      newValidationError["image"] = "please crop your image to the correct aspect ratio";
+      newValidationError["image"] =
+        "please crop your image to the correct aspect ratio";
     }
 
     if (formState.ingredients?.filter((e) => e.name).length === 0) {
@@ -135,7 +147,8 @@ const Create = () => {
       return;
     }
 
-    const response = await createRecipe(formState, file);
+    const author: string = userContext.user?.admin && formState['author'] ? formState['author'] : userContext.user.id
+    const response = await createRecipe(formState, file, parseInt(author));
     if (!response.error) {
       window.location.href = `/recipe/${response.id}`;
     } else {
@@ -190,6 +203,27 @@ const Create = () => {
                         <Error error={validationError["name"]} />
                       </div>
                     </div>
+
+                    {userContext.user?.admin && 
+                      <div className="grid grid-cols-3 gap-6">
+                        <div className="col-span-3 sm:col-span-2">
+                          <InputLabel label="Author Id" />
+                          <div className="mt-1 flex shadow-sm">
+                            <input
+                              type="number"
+                              name="author"
+                              id="author"
+                              className={clsx(
+                                "focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md sm:text-sm border-gray-300"
+                              )}
+                              placeholder="author id"
+                              value={formState["author"]}
+                              onChange={handleChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    }
 
                     <div>
                       <InputLabel label="Description" />
@@ -460,4 +494,3 @@ const Error = (props) => {
     )
   );
 };
-

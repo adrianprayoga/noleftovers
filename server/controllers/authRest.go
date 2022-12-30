@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/adrianprayoga/noleftovers/server/auth"
 	logger "github.com/adrianprayoga/noleftovers/server/internals/logger"
 	"github.com/adrianprayoga/noleftovers/server/models"
@@ -64,7 +63,6 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 	logger.Log.Info("Session info handle success", zap.Any("val", session.Name()))
 
 	val, ok := session.Values["authenticated"].(bool)
-	fmt.Println("auth value", val, ok)
 	if ok && val {
 		logger.Log.Info("user is successfully authenticated via handleSuccess")
 
@@ -75,6 +73,8 @@ func (rs AuthResource) HandleSuccess(w http.ResponseWriter, r *http.Request) {
 			User: models.User{
 				Email: session.Values["email"].(string),
 				FullName: session.Values["fullName"].(string),
+				Id: session.Values["id"].(uint),
+				Admin: session.Values["isAdmin"].(bool),
 			},
 		})
 		_, err := w.Write(res)
@@ -193,6 +193,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 		session.Values["picture"] = newUser.Picture
 		session.Values["id"] = user.Id
 		session.Values["fullName"] = user.FullName
+		session.Values["isAdmin"] = user.Admin
 
 		err = session.Save(r, w)
 		if err != nil {
@@ -201,7 +202,7 @@ func (rs AuthResource) CallBackFromGoogle(w http.ResponseWriter, r *http.Request
 		}
 
 		logger.Log.Debug("Session info", zap.Any("val", session.Values["authenticated"]))
-		logger.Log.Info("Is New User", zap.Bool("isNewUser", isNewUser))
+		logger.Log.Debug("Is New User", zap.Bool("isNewUser", isNewUser))
 
 		if isNewUser {
 			http.Redirect(w, r, viper.GetString("client_host")+"/user/edit", http.StatusTemporaryRedirect)

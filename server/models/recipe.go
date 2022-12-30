@@ -16,6 +16,8 @@ type Recipe struct {
 	Name        string       `json:"name,omitempty"`
 	Description string       `json:"description,omitempty"`
 	Author      uint         `json:"author,omitempty"`
+	AuthorName  sql.NullString   	 `json:"author_name,omitempty"`
+	AuthorEmail sql.NullString   	 `json:"author_email,omitempty"`
 	ImageLink   string       `json:"imageLink,omitempty"`
 	ModifiedAt  string       `json:"modifiedAt,omitempty"`
 	CreatedAt   string       `json:"createdAt,omitempty"`
@@ -141,7 +143,9 @@ func batchInsert(tx *sql.Tx, sqlString string, numArguments int, numEntry int, a
 
 func (service *RecipeService) GetRecipes() ([]Recipe, error) {
 
-	rows, err := service.DB.Query(`SELECT id, name, description, author, image_link FROM RECIPES`)
+	rows, err := service.DB.Query(`SELECT 
+       r.id, r.name, r.description, r.author, r.image_link, u.full_name, u.email
+	FROM RECIPES r LEFT JOIN USERS u ON r.author = u.id`)
 	if err != nil {
 		logger.Log.Error("Error getting recipe list", zap.Error(err))
 		return nil, fmt.Errorf("error getting recipe list: %w", err)
@@ -151,7 +155,7 @@ func (service *RecipeService) GetRecipes() ([]Recipe, error) {
 	var recipes []Recipe
 	for rows.Next() {
 		recipe := Recipe{}
-		err = rows.Scan(&recipe.Id, &recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink)
+		err = rows.Scan(&recipe.Id, &recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink, &recipe.AuthorName, &recipe.AuthorEmail)
 		if err != nil {
 			fmt.Println("Error reading recipe")
 			return nil, fmt.Errorf("error reading recipe: %w", err)
@@ -237,10 +241,11 @@ func (service *RecipeService) GetRecipeById(id uint) (*Recipe, error) {
 	}
 
 	sqlQuery := `SELECT 
-		r.name, r.description, r.author, r.image_link, i.position, i.name, i.amount, i.measure, m.name
+		r.name, r.description, r.author, r.image_link, i.position, i.name, i.amount, i.measure, m.name, u.full_name, u.email
 	FROM recipes r
 			LEFT JOIN ingredients i ON r.id = i.recipe_id
 			LEFT JOIN measure m 	ON i.measure = m.id
+			LEFT JOIN users u 		ON r.author = u.id
 	WHERE r.id=$1
 	ORDER BY i.position`
 
@@ -254,7 +259,7 @@ func (service *RecipeService) GetRecipeById(id uint) (*Recipe, error) {
 	ingredients := make([]Ingredient, 0)
 	for rows.Next() {
 		i := Ingredient{}
-		err = rows.Scan(&recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink, &i.Position, &i.Name, &i.Amount, &i.Measure, &i.MeasureResolved)
+		err = rows.Scan(&recipe.Name, &recipe.Description, &recipe.Author, &recipe.ImageLink, &i.Position, &i.Name, &i.Amount, &i.Measure, &i.MeasureResolved, &recipe.AuthorName, &recipe.AuthorEmail)
 		if err != nil {
 			fmt.Println("Error reading recipe")
 			return nil, fmt.Errorf("error reading recipe: %w", err)

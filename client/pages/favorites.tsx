@@ -19,6 +19,8 @@ export default function Favorites({ allReciplesData }) {
         <title>{siteTitle}</title>
       </Head>
 
+      
+
       {!userContext.authenticated ? (
         <h1 className="text-xl flex justify-center">
           You are currently not logged in. Please login to access your favorites
