@@ -20,6 +20,7 @@
     "next": "12.2.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-image-crop": "^10.0.9",
     "react-textarea-autosize": "^8.3.4",
     "remark": "^14.0.2",
     "remark-html": "^15.0.1"

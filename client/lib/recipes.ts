@@ -54,7 +54,7 @@ export interface createStepsEntry {
   text: string;
 }
 
-export const createRecipe = async (recipe: createRecipeEntry, file: string) => {
+export const createRecipe = async (recipe: createRecipeEntry, file: File) => {
   let data = {
     name: recipe.name,
     description: recipe.description,

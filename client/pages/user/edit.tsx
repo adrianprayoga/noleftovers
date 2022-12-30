@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useReducer } from "react";
 import Layout from "../../components/Layout";
-import Alert from "../../components/Alert";
+import Alert from "../../components/AlertBox/Alert";
 import { CheckCircleIcon, ExclamationIcon } from "@heroicons/react/outline";
 import { UserContext } from "../../hooks/userContext";
 import clsx from "clsx";
@@ -10,7 +10,7 @@ import {
   INITIAL_STATE,
 } from "../../reducer/userReducer";
 import { updateUser } from "../../lib/users";
-import Success from "../../components/Success";
+import Success from "../../components/AlertBox/Success";
 
 const Edit = () => {
   const userContext = useContext(UserContext);

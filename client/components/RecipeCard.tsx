@@ -15,10 +15,11 @@ interface RecipeHighlight {
 
 const RecipeCard = (props: RecipeHighlight) => {
   return (
-    <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
+    // <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
+    <div className="flex flex-row align-top bg-white rounded-lg border shadow-md hover:bg-gray-100 min-w-fit">
       {props.imageLink && (
         <img
-          className="h-96 rounded-t-lg md:h-auto md:w-48 md:rounded-none md:rounded-l-lg"
+          className="rounded-t-lg h-60 w-60 md:rounded-none md:rounded-l-lg"
           src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
           alt=""
         />
