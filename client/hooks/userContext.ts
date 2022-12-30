@@ -10,7 +10,8 @@ interface User {
     full_name: string
     email: string;
     last_login: string;
-    picture: string
+    picture: string;
+    admin: boolean;
 }
 
 interface UserAuth {

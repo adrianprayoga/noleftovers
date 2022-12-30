@@ -8,6 +8,7 @@ CREATE TABLE users (
                        picture TEXT NOT NULL,
                        created_at timestamptz NOT NULL DEFAULT NOW(),
                        modified_at timestamptz NOT NULL DEFAULT NOW(),
-                       last_login timestamptz NOT NULL DEFAULT NOW()
+                       last_login timestamptz NOT NULL DEFAULT NOW(),
+                       is_admin BOOL DEFAULT FALSE
 );
 

@@ -8,7 +8,7 @@ export const getAllRecipes = async (): Promise<any[]> => {
 
     return response.data;
   } catch (err) {
-    console.error("error in getting recipes");
+    console.error("error in getting recipes", err);
 
     return [];
   }
@@ -54,12 +54,13 @@ export interface createStepsEntry {
   text: string;
 }
 
-export const createRecipe = async (recipe: createRecipeEntry, file: File) => {
+export const createRecipe = async (recipe: createRecipeEntry, file: File, author: number) => {
   let data = {
     name: recipe.name,
     description: recipe.description,
+    author: author,
     ingredients: [],
-    steps: [],
+    steps: []
   };
 
   data.ingredients = recipe.ingredients

@@ -6,6 +6,7 @@ export const INITIAL_STATE = {
   description: "",
   ingredients: [{ ...defaultIngredient }],
   steps: [{ ...defaultStep }],
+  author: "",
 };
 
 export const ACTION_TYPES = {

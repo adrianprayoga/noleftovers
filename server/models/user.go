@@ -19,6 +19,7 @@ type User struct {
 	OauthId string `json:"oauth_id"`
 	LastLogin string `json:"last_login"`
 	Picture string `json:"picture"`
+	Admin bool `json:"admin"`
 }
 
 type NewUser struct {
@@ -47,7 +48,7 @@ func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, bool, error) {
 	}
 
 	exists := true
-	err := us.DB.QueryRow(`SELECT id, full_name FROM users WHERE email=$1`, user.Email).Scan(&user.Id, &user.FullName)
+	err := us.DB.QueryRow(`SELECT id, full_name, is_admin FROM users WHERE email=$1`, user.Email).Scan(&user.Id, &user.FullName, &user.Admin)
 
 	if err != nil && err != sql.ErrNoRows {
 		logger.Log.Error("Error checking whether user exists")
