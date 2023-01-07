@@ -25,7 +25,7 @@ const Post = (props) => {
       )}
       
       
-      <div className="text-gray-900 my-5">{recipeData.description}</div>
+      <div className="text-gray-900 my-5 whitespace-pre-wrap">{recipeData.description}</div>
       <div className="bg-blue-50 p-5 rounded-md">
         <h1 className="text-2xl font-medium leading-6 text-gray-900 mb-4">
           Ingredients List
@@ -57,7 +57,7 @@ const Post = (props) => {
           return (
             <div key={i} className="my-5">
               <div className="font-bold">{`Step ${i + 1}`}</div>
-              <p>{step.text}</p>
+              <div className="whitespace-pre-wrap">{step.text}</div>
             </div>
           );
         })}
