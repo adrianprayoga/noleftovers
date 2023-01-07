@@ -11,23 +11,23 @@ import (
 )
 
 type User struct {
-	Id    uint `json:"id"`
-	Email string `json:"email"`
-	FullName string `json:"full_name"`
+	Id           uint   `json:"id"`
+	Email        string `json:"email"`
+	FullName     string `json:"full_name"`
 	PasswordHash string `json:"password_hash"`
-	AuthMethod string `json:"auth_method"`
-	OauthId string `json:"oauth_id"`
-	LastLogin string `json:"last_login"`
-	Picture string `json:"picture"`
-	Admin bool `json:"admin"`
+	AuthMethod   string `json:"auth_method"`
+	OauthId      string `json:"oauth_id"`
+	LastLogin    string `json:"last_login"`
+	Picture      string `json:"picture"`
+	Admin        bool   `json:"admin"`
 }
 
 type NewUser struct {
-	Email string
-	Password string
+	Email      string
+	Password   string
 	AuthMethod string
-	OauthId string
-	Picture string
+	OauthId    string
+	Picture    string
 }
 
 type UserService struct {
@@ -41,10 +41,10 @@ func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, bool, error) {
 	email := strings.ToLower(nu.Email)
 
 	user := User{
-		Email: email,
+		Email:      email,
 		AuthMethod: nu.AuthMethod,
-		OauthId: nu.OauthId,
-		Picture: nu.Picture,
+		OauthId:    nu.OauthId,
+		Picture:    nu.Picture,
 	}
 
 	exists := true
@@ -76,6 +76,7 @@ func (us *UserService) CreateOrUpdateByOauth(nu NewUser) (*User, bool, error) {
 		}
 	}
 
+	logger.Log.Info("logging in as user:", zap.Any("user", user))
 	return &user, !exists, nil
 }
 
@@ -114,7 +115,7 @@ func (us *UserService) Create(nu NewUser) (*User, error) {
 	passwordHash := string(hashedBytes)
 
 	user := User{
-		Email: email,
+		Email:        email,
 		PasswordHash: passwordHash,
 	}
 
