@@ -40,7 +40,7 @@ const RecipeCard = (props: RecipeHighlight) => {
           <p className=" mb-3 font-normal text-gray-700 text-base">
             {props.imageLink && (
               <img
-                className="md:hidden h-36 w-36 rounded-lg float-left my-2 mr-4"
+                className="md:hidden h-44 h-44 rounded-lg float-left my-2 mr-4"
                 src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
                 alt=""
               />
