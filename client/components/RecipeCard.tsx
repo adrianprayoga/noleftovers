@@ -26,7 +26,7 @@ const RecipeCard = (props: RecipeHighlight) => {
     <div className="flex flex-col align-top bg-white rounded-lg border shadow-md md:flex-row hover:bg-gray-100">
       {props.imageLink && (
         <img
-          className="hidden md:block rounded-t-lg md:h-auto md:w-48 md:rounded-none md:rounded-l-lg"
+          className="hidden md:block rounded-t-lg md:h-auto md:w-56 md:rounded-none md:rounded-l-lg"
           src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
           alt=""
         />
@@ -40,7 +40,7 @@ const RecipeCard = (props: RecipeHighlight) => {
           <p className=" mb-3 font-normal text-gray-700 text-base">
             {props.imageLink && (
               <img
-                className="md:hidden h-44 h-44 rounded-lg float-left my-2 mr-4"
+                className="md:hidden h-36 w-36 rounded-lg float-left my-2 mr-4"
                 src={`${process.env.NEXT_PUBLIC_BACKEND_HOST}/images/${props.imageLink}`}
                 alt=""
               />
